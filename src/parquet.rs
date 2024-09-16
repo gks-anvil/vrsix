@@ -2,7 +2,6 @@
 // * double check that the is_empty function helps at all in light of ^
 // * two parquet files, one for variants and one for patients
 // * parallelism: https://github.com/zaeleus/noodles/issues/85
-use itertools::izip;
 use noodles_vcf::{
     self as vcf,
     variant::record::{
@@ -12,10 +11,10 @@ use noodles_vcf::{
 };
 use std::path::PathBuf;
 use std::time::Instant;
-// use polars::prelude::*;
+use polars::prelude::*;
 use futures::{StreamExt, TryFutureExt, TryStreamExt};
 use tokio::{fs::File as TkFile, io::BufReader};
-// use std::fs::File;
+use std::fs::File;
 
 trait AnnotatedSample {
     fn get_allele_indices(
@@ -151,7 +150,6 @@ pub async fn to_parquet(vcf_path: &PathBuf) -> Result<(), Box<dyn std::error::Er
         }
 
         vrs_ids.append(&mut record_vrs_ids);
-        // TODO chromosome
         let mut record_chroms = Vec::with_capacity(record_vrs_ids.len());
         record_chroms.resize(
             record_vrs_ids.len(),
@@ -163,16 +161,22 @@ pub async fn to_parquet(vcf_path: &PathBuf) -> Result<(), Box<dyn std::error::Er
         vrs_states.append(&mut record_vrs_states);
     }
 
-    // let mut df: DataFrame = df![
-    //     "pt_id" => all_patient_ids,
-    //     "vrs_id" => all_vrs_ids,
-    //     "chrom" => all_chroms,
-    //     "start" => all_starts,
-    //     "end" => all_ends,
-    //     "state" => all_states
-    // ].unwrap();
-    // let file = File::create("example.parquet").expect("couldn't open outfile");
-    // let _ = ParquetWriter::new(file).finish(&mut df);
+    let mut pts_df: DataFrame = df![
+        "pt_id" => patient_ids,
+        "vrs_id" => patient_vrs_ids
+    ].unwrap();
+    let pts_file = File::create("pts_vrs.parquet").expect("Couldn't open patients file to write");
+    let _ = ParquetWriter::new(pts_file).finish(&mut pts_df);
+
+    let mut vrs_df: DataFrame = df![
+        "vrs_id" => vrs_ids,
+        "chrom" => vrs_chroms,
+        "start" => vrs_starts,
+        "end" => vrs_ends,
+        "state" => vrs_states,
+    ].unwrap();
+    let vrs_file = File::create("vrs.parquet").expect("Couldn't open variations file to write");
+    let _ = ParquetWriter::new(vrs_file).finish(&mut vrs_df);
 
     let duration = start.elapsed();
     println!("Time taken: {:?}", duration);
