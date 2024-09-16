@@ -12,7 +12,7 @@ use noodles_vcf::{
 use std::path::PathBuf;
 use std::time::Instant;
 use polars::prelude::*;
-use futures::{StreamExt, TryFutureExt, TryStreamExt};
+use futures::TryStreamExt;
 use tokio::{fs::File as TkFile, io::BufReader};
 use std::fs::File;
 
@@ -150,11 +150,7 @@ pub async fn to_parquet(vcf_path: &PathBuf) -> Result<(), Box<dyn std::error::Er
         }
 
         vrs_ids.append(&mut record_vrs_ids);
-        let mut record_chroms = Vec::with_capacity(record_vrs_ids.len());
-        record_chroms.resize(
-            record_vrs_ids.len(),
-            record.reference_sequence_name().to_string().clone(),
-        );
+        let mut record_chroms = vec![record.reference_sequence_name().to_string().clone(); record_vrs_ids.len()];
         vrs_chroms.append(&mut record_chroms);
         vrs_starts.append(&mut record_vrs_starts);
         vrs_ends.append(&mut record_vrs_ends);
