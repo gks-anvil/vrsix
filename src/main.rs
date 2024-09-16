@@ -1,0 +1,16 @@
+use clap::Parser;
+
+mod cli;
+mod parquet;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let cli = cli::Cli::parse();
+
+    match &cli.command {
+        cli::Commands::Parquet { input_file } => {
+            _ = parquet::to_parquet(input_file).await;
+        }
+    }
+    Ok(())
+}
