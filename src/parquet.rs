@@ -1,20 +1,20 @@
 // TODO
 // * double check that the is_empty function helps at all in light of ^
-// * two parquet files, one for variants and one for patients
 // * parallelism: https://github.com/zaeleus/noodles/issues/85
+use futures::TryStreamExt;
 use noodles_vcf::{
     self as vcf,
     variant::record::{
         info::{self, field::Value as InfoValue},
         samples::{self, Sample},
     },
+    Header,
 };
+use polars::prelude::*;
+use std::fs::File;
 use std::path::PathBuf;
 use std::time::Instant;
-use polars::prelude::*;
-use futures::TryStreamExt;
 use tokio::{fs::File as TkFile, io::BufReader};
-use std::fs::File;
 
 trait AnnotatedSample {
     fn get_allele_indices(
@@ -149,8 +149,10 @@ pub async fn to_parquet(vcf_path: &PathBuf) -> Result<(), Box<dyn std::error::Er
             }
         }
 
+        let num_vars = record_vrs_ids.len();
         vrs_ids.append(&mut record_vrs_ids);
-        let mut record_chroms = vec![record.reference_sequence_name().to_string().clone(); record_vrs_ids.len()];
+        let mut record_chroms =
+            vec![record.reference_sequence_name().to_string().clone(); num_vars];
         vrs_chroms.append(&mut record_chroms);
         vrs_starts.append(&mut record_vrs_starts);
         vrs_ends.append(&mut record_vrs_ends);
@@ -160,7 +162,8 @@ pub async fn to_parquet(vcf_path: &PathBuf) -> Result<(), Box<dyn std::error::Er
     let mut pts_df: DataFrame = df![
         "pt_id" => patient_ids,
         "vrs_id" => patient_vrs_ids
-    ].unwrap();
+    ]
+    .unwrap();
     let pts_file = File::create("pts_vrs.parquet").expect("Couldn't open patients file to write");
     let _ = ParquetWriter::new(pts_file).finish(&mut pts_df);
 
@@ -170,7 +173,8 @@ pub async fn to_parquet(vcf_path: &PathBuf) -> Result<(), Box<dyn std::error::Er
         "start" => vrs_starts,
         "end" => vrs_ends,
         "state" => vrs_states,
-    ].unwrap();
+    ]
+    .unwrap();
     let vrs_file = File::create("vrs.parquet").expect("Couldn't open variations file to write");
     let _ = ParquetWriter::new(vrs_file).finish(&mut vrs_df);
 
