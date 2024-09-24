@@ -1,0 +1,13 @@
+annotated-types==0.7.0
+attrs==24.2.0
+bioutils==0.6.0
+canonicaljson==2.0.0
+certifi==2024.8.30
+charset-normalizer==3.3.2
+ga4gh.vrs==2.0.0a10
+idna==3.10
+pydantic==2.9.2
+pydantic_core==2.23.4
+requests==2.32.3
+typing_extensions==4.12.2
+urllib3==1.26.20
