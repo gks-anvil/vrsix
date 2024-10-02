@@ -13,4 +13,8 @@ pub enum Commands {
         #[arg(value_name = "INPUT")]
         input_file: PathBuf,
     },
+    Sqlite {
+        #[arg(value_name = "INPUT")]
+        input_file: PathBuf,
+    }
 }
