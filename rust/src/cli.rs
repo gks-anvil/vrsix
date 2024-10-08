@@ -9,12 +9,22 @@ pub struct Cli {
 
 #[derive(Subcommand)]
 pub enum Commands {
-    Parquet {
+    Load {
         #[arg(value_name = "INPUT")]
         input_file: PathBuf,
     },
-    Sqlite {
-        #[arg(value_name = "INPUT")]
-        input_file: PathBuf,
+    FetchId {
+        #[arg(value_name = "VRS_ID")]
+        vrs_id: String,
+    },
+    FetchRange {
+        #[arg(value_name = "chr")]
+        chr: String,
+
+        #[arg(value_name = "start")]
+        start: i64,
+
+        #[arg(value_name = "end")]
+        end: i64
     }
 }
