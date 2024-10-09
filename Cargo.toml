@@ -1,5 +1,5 @@
 [package]
-name = "gks-gregor-tools"
+name = "vrs-index-vcf"
 version = "0.1.0"
 edition = "2021"
 
