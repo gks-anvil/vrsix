@@ -4,7 +4,7 @@ from pathlib import Path
 
 import click
 
-from vrs_index_vcf import load
+from vrs_index_vcf import load as load_vcf
 
 
 @click.group()
@@ -19,10 +19,10 @@ def cli() -> None:
         exists=True, file_okay=True, dir_okay=False, readable=True, path_type=Path
     ),
 )
-def load_vcf(vcf_path: Path) -> None:
+def load(vcf_path: Path) -> None:
     """Index the VRS annotations in a VCF by loading it into the sqlite DB.
 
     \f
     :param vcf_path: path to VCF to ingest
     """
-    load.load_vcf(vcf_path)
+    load_vcf.load_vcf(vcf_path)
