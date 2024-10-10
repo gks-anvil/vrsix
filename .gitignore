@@ -24,3 +24,9 @@ Cargo.lock
 *.pkl
 *.vcf
 *.parquet
+*.db
+*.db-*
+*.tsv
+
+# other
+*.log
