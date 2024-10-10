@@ -26,8 +26,6 @@ From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. suff
 
 Ensure that a recent version of the [Rust toolchain](https://www.rust-lang.org/tools/install) is available.
 
-The [Rust toolchain](https://www.rust-lang.org/tools/install) must be installed.
-
 Create a virtual environment and install developer dependencies:
 
 ```shell
