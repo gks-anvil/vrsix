@@ -1,4 +1,4 @@
-use sqlx::{migrate::MigrateDatabase, Sqlite, SqlitePool, Error};
+use sqlx::{migrate::MigrateDatabase, Error, Sqlite, SqlitePool};
 
 const DB_URL: &str = "sqlite://sqlite.db";
 
