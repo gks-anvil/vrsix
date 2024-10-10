@@ -1,4 +1,5 @@
 """Provide CLI utility for interfacing with data load and fetch operations."""
+
 from pathlib import Path
 
 import click

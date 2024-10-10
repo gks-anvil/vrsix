@@ -1,4 +1,5 @@
 """Load VCFs into sqlite index."""
+
 from pathlib import Path
 
 from vrs_index_vcf._core import vcf_to_sqlite
