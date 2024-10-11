@@ -88,3 +88,4 @@ Cargo.lock
 *.db
 *.db-*
 *.tsv
+scratch/

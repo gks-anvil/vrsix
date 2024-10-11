@@ -8,13 +8,13 @@ From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. suff
 % vrs-index-vcf load gregor_joint_chr3_annotated.vcf
 ```
 
-<!--Given a VRS ID, retrieve VCF-associated data (output format TBD)-->
-<!---->
-<!--```shell-->
-<!--% vrs-index-vcf fetch-id HBtEUibAIKjZxBALaDFky0RDf56_IKT6-->
-<!--DbRow { vrs_id: "HBtUUibAIKjZxIALaDFky0RDf56_LKT6", chr: "3", pos: 10125 }-->
-<!--```-->
-<!---->
+Given a VRS ID, retrieve VCF-associated data (output format TBD)
+
+```shell
+% vrs-index-vcf fetch-id fBtEUibAIKjZxBALaDFky0RDf56_IKT6
+fBtEUibAIKjZxBALaDFky0RDf56_IKT6,1,103894
+```
+
 <!--Or fetch all rows within a coordinate range:-->
 <!---->
 <!--```shell-->
