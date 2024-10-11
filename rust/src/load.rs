@@ -1,13 +1,14 @@
+use crate::sqlite::{get_db_connection, setup_db, DbRow};
 use futures::TryStreamExt;
 use noodles_vcf::{
     self as vcf,
     variant::record::info::{self, field::Value as InfoValue},
 };
+use pyo3::prelude::*;
 use sqlx::SqlitePool;
 use std::path::PathBuf;
 use std::time::Instant;
 use tokio::{fs::File as TkFile, io::BufReader};
-use crate::sqlite::{DbRow, setup_db, get_db_connection};
 
 async fn load_allele(db_row: DbRow, pool: &SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
     let mut conn = pool.acquire().await?;
@@ -45,10 +46,10 @@ fn get_vrs_ids(
     }
 }
 
-pub async fn vcf_to_sqlite(vcf_path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn load_vcf(vcf_path: PathBuf) -> PyResult<()> {
     let start = Instant::now();
 
-    setup_db().await?;
+    setup_db().await.unwrap();
 
     let mut reader = TkFile::open(vcf_path)
         .await
@@ -58,7 +59,7 @@ pub async fn vcf_to_sqlite(vcf_path: &PathBuf) -> Result<(), Box<dyn std::error:
 
     let mut records = reader.records();
 
-    let db_pool = get_db_connection().await?;
+    let db_pool = get_db_connection().await.unwrap();
 
     while let Some(record) = records.try_next().await? {
         let vrs_ids = get_vrs_ids(record.info(), &header).unwrap();
@@ -67,11 +68,14 @@ pub async fn vcf_to_sqlite(vcf_path: &PathBuf) -> Result<(), Box<dyn std::error:
 
         for vrs_id in vrs_ids {
             let row = DbRow {
-                vrs_id: vrs_id.strip_prefix("ga4gh:VA.").unwrap_or(&vrs_id).to_string(),
+                vrs_id: vrs_id
+                    .strip_prefix("ga4gh:VA.")
+                    .unwrap_or(&vrs_id)
+                    .to_string(),
                 chr: chrom.strip_prefix("chr").unwrap_or(chrom).to_string(),
                 pos: pos.try_into().unwrap(),
             };
-            load_allele(row, &db_pool).await?;
+            load_allele(row, &db_pool).await.unwrap();
         }
     }
 
