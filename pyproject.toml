@@ -1,5 +1,5 @@
 [project]
-name = "vrs-index-vcf"
+name = "ivrs"
 version = "0.0.1"
 authors = [
     {name = "James Stevenson"},
@@ -21,7 +21,7 @@ classifiers = [
 requires-python = ">=3.10"
 description = "Tools for indexing GREGoR VCFs"
 license = {file = "LICENSE"}
-dependencies = ["click", "asyncclick"]
+dependencies = ["click", "asyncclick", "wags-tails"]
 
 [project.optional-dependencies]
 tests = [
@@ -42,7 +42,7 @@ Source = "https://github.com/genomicmedlab/gregor"
 "Bug Tracker" = "https://github.com/genomicmedlab/gregor/issues"
 
 [project.scripts]
-"vrs-index-vcf" = "vrs_index_vcf.cli:cli"
+"ivrs" = "ivrs.cli:cli"
 
 [build-system]
 requires = ["maturin>=1.2,<2.0"]
@@ -150,7 +150,7 @@ ignore = [
 # B011 - assert-false
 # INP001 - implicit-namespace-package
 "tests/*" = ["ANN001", "ANN2", "ANN102", "S101", "B011", "INP001"]
-"src/vrs_index_vcf/cli.py" = ["D301"]
+"src/ivrs/cli.py" = ["D301"]
 
 [tool.ruff.format]
 docstring-code-format = true

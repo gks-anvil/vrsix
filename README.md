@@ -1,26 +1,29 @@
-# GREGoR VRS Index
+# IVRS: Indexing VRS-Annotated VCFs
 
-Proof of concept for sqlite-based indexing of GREGoR VCFs annotated with VRS IDs and attributes.
+Proof of concept for sqlite-based indexing of ANViL-hosted VCFs annotated with VRS IDs and attributes.
 
 From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. sufficient inputs for a tabix lookup), and store them in a sqlite database.
 
 ```shell
-% vrs-index-vcf load gregor_joint_chr3_annotated.vcf
+% ivrs load gregor_joint_chr3_annotated.vcf
 ```
 
-<!--Given a VRS ID, retrieve VCF-associated data (output format TBD)-->
-<!---->
-<!--```shell-->
-<!--% vrs-index-vcf fetch-id HBtEUibAIKjZxBALaDFky0RDf56_IKT6-->
-<!--DbRow { vrs_id: "HBtUUibAIKjZxIALaDFky0RDf56_LKT6", chr: "3", pos: 10125 }-->
-<!--```-->
-<!---->
-<!--Or fetch all rows within a coordinate range:-->
-<!---->
-<!--```shell-->
-<!--% vrs-index-vc fetch-range 3 10110 10140-->
-<!--[DbRow { vrs_id: "HBtEtibAIKjZxBALaDFky0RDft6_IKT6", chr: "3", pos: 10125 }, DbRow { vrs_id: "2d0wfnw9IQpcf7ACZ5tla-NtP-u34Vmj", chr: "3", pos: 10128 }, DbRow { vrs_id: "PXiNdKr3kDiKJtkjolwiYpisen68Vz1d", chr: "3", pos: 10136 }, DbRow { vrs_id: "zs65-UuparftqeXlL_ZhSCfZiBmbpr49", chr: "3", pos: 10137 }, DbRow { vrs_id: "3Cf2iW7hC1bMORih10jXS40nwE5tdaD8", chr: "3", pos: 10138 }, DbRow { vrs_id: "EaMAbMRxCU4EkasuuX5rLupA-SXPpi6O", chr: "3", pos: 10138 }]-->
-<!--```-->
+Given a VRS ID, retrieve VCF-associated data (output format TBD)
+
+```shell
+% ivrs fetch-by-id --db-location=sqlite.db dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG
+ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,1,783006
+```
+
+Or fetch all rows within a coordinate range:
+
+```shell
+% ivrs fetch-by-range --db-location=sqlite.db 1 783000 783200
+ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,1,783006
+ga4gh:VA.MiasxyXMXtOpsZgGelL3c4QgtflCNLHD,1,783006
+ga4gh:VA.5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p,1,783175
+ga4gh:VA.jHaXepIvlbnapfPtH_62y-Qm81hCrBYn,1,783175
+```
 
 ## Set up for development
 
@@ -64,3 +67,8 @@ cargo fmt
 <!--```shell-->
 <!--pytest-->
 <!--```-->
+
+## Running limitations/todo
+
+* DB location for `load` actions is currently hardcoded as `./sqlite.db` on the Rust side
+* No tests :(
