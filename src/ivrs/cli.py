@@ -77,10 +77,12 @@ def fetch_by_id(
 @click.argument(
     "start",
     type=click.INT,
+    required=True,
 )
 @click.argument(
     "end",
     type=click.INT,
+    required=True,
 )
 @click.option(
     "--db-location",
