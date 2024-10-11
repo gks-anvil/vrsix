@@ -1,10 +1,10 @@
 [package]
-name = "vrs_index_vcf"
+name = "ivrs"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "vrs_index_vcf"
+name = "ivrs"
 crate-type = ["cdylib"]
 
 [dependencies]

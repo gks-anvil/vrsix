@@ -5,7 +5,7 @@ import datetime
 from pathlib import Path
 
 
-def generate_csv(rows: list[tuple[str]], output_location: Path) -> None:
+def generate_csv(rows: list[tuple], output_location: Path) -> None:
     """Generate CSV at indicated location with provided data.
 
     :param rows: rows returned from sqlite index
