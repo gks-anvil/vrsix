@@ -27,16 +27,14 @@ def fetch_by_vrs_ids(
     :return: location description tuple if available
     """
     conn = _get_connection(db_location)
-    if len(vrs_ids) == 1:
-        result = conn.cursor().execute(
-            "SELECT * FROM vrs_locations WHERE vrs_id = ?", (vrs_ids[0],)
-        )
-        data = [result.fetchone()] if result else []
-    else:
-        result = conn.cursor().execute(
-            "SELECT * FROM vrs_locations WHERE vrs_id IN ?", (vrs_ids,)
-        )
-        data = result.fetchall()
+    # have to manually make placeholders for python sqlite API --
+    # should still be safe against injection by using parameterized query
+    placeholders = ",".join("?" for _ in vrs_ids)
+    result = conn.cursor().execute(
+        f"SELECT vrs_id, chr, pos FROM vrs_locations WHERE vrs_id IN ({placeholders})",  # noqa: S608
+        vrs_ids,
+    )
+    data = result.fetchall()
     conn.close()
     return data
 
@@ -53,7 +51,7 @@ def fetch_by_pos_range(
     """
     conn = _get_connection(db_location)
     result = conn.cursor().execute(
-        "SELECT * FROM vrs_locations WHERE chr = ? AND pos BETWEEN ? AND ?",
+        "SELECT vrs_id, chr, pos FROM vrs_locations WHERE chr = ? AND pos BETWEEN ? AND ?",
         (chrom, start, end),
     )
     data = result.fetchall()
