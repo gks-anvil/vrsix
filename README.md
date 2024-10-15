@@ -5,7 +5,7 @@ Proof of concept for sqlite-based indexing of ANViL-hosted VCFs annotated with V
 From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. sufficient inputs for a tabix lookup), and store them in a sqlite database.
 
 ```shell
-% vrsix load gregor_joint_chr3_annotated.vcf
+% vrsix load chr3.vcf
 ```
 
 Given a VRS ID, retrieve VCF-associated data (output format TBD)
