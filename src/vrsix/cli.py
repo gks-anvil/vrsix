@@ -4,10 +4,10 @@ from pathlib import Path
 
 import click
 
-from ivrs import load as load_vcf
-from ivrs.fetch import fetch_by_pos_range as vcf_fetch_by_pos_range
-from ivrs.fetch import fetch_by_vrs_ids
-from ivrs.output import generate_csv
+from vrsix import load as load_vcf
+from vrsix.fetch import fetch_by_pos_range as vcf_fetch_by_pos_range
+from vrsix.fetch import fetch_by_vrs_ids
+from vrsix.output import generate_csv
 
 
 @click.group()

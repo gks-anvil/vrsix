@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from ivrs._core import vcf_to_sqlite
+from vrsix._core import vcf_to_sqlite
 
 
 def load_vcf(vcf_path: Path, db_location: Path | None = None) -> None:  # noqa: ARG001

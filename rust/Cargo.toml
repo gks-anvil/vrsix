@@ -1,10 +1,10 @@
 [package]
-name = "ivrs"
+name = "vrsix"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "ivrs"
+name = "vrsix"
 crate-type = ["cdylib"]
 
 [dependencies]
