@@ -1,24 +1,24 @@
-# IVRS: Indexing VRS-Annotated VCFs
+# vrsix: Indexing VRS-Annotated VCFs
 
 Proof of concept for sqlite-based indexing of ANViL-hosted VCFs annotated with VRS IDs and attributes.
 
 From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. sufficient inputs for a tabix lookup), and store them in a sqlite database.
 
 ```shell
-% ivrs load gregor_joint_chr3_annotated.vcf
+% vrsix load gregor_joint_chr3_annotated.vcf
 ```
 
 Given a VRS ID, retrieve VCF-associated data (output format TBD)
 
 ```shell
-% ivrs fetch-by-id --db-location=sqlite.db dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG
+% vrsix fetch-by-id --db-location=sqlite.db dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG
 ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,1,783006
 ```
 
 Or fetch all rows within a coordinate range:
 
 ```shell
-% ivrs fetch-by-range --db-location=sqlite.db 1 783000 783200
+% vrsix fetch-by-range --db-location=sqlite.db 1 783000 783200
 ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,1,783006
 ga4gh:VA.MiasxyXMXtOpsZgGelL3c4QgtflCNLHD,1,783006
 ga4gh:VA.5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p,1,783175
