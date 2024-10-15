@@ -22,9 +22,9 @@ pub async fn setup_db() -> Result<(), Error> {
     let result = sqlx::query(
         "
         CREATE TABLE IF NOT EXISTS vrs_locations (
-            vrs_id VARCHAR(36)
-            PRIMARY KEY NOT NULL,
-            chr VARCHAR(5) NOT NULL,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            vrs_id TEXT NOT NULL,
+            chr TEXT NOT NULL,
             pos INTEGER NOT NULL
         );",
     )

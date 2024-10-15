@@ -50,7 +50,7 @@ build-backend = "maturin"
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
-module-name = "vrs_index_vcf._core"
+module-name = "vrsix._core"
 python-source = "src"
 
 [tool.pytest.ini_options]

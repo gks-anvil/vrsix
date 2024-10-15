@@ -27,16 +27,10 @@ def fetch_by_vrs_ids(
     :return: location description tuple if available
     """
     conn = _get_connection(db_location)
-    if len(vrs_ids) == 1:
-        result = conn.cursor().execute(
-            "SELECT * FROM vrs_locations WHERE vrs_id = ?", (vrs_ids[0],)
-        )
-        data = [result.fetchone()] if result else []
-    else:
-        result = conn.cursor().execute(
-            "SELECT * FROM vrs_locations WHERE vrs_id IN ?", (vrs_ids,)
-        )
-        data = result.fetchall()
+    result = conn.cursor().execute(
+        "SELECT * FROM vrs_locations WHERE vrs_id IN ?", (vrs_ids,)
+    )
+    data = result.fetchall()
     conn.close()
     return data
 
