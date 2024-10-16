@@ -46,10 +46,10 @@ fn get_vrs_ids(
     }
 }
 
-pub async fn load_vcf(vcf_path: PathBuf) -> PyResult<()> {
+pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
     let start = Instant::now();
 
-    setup_db().await.unwrap();
+    setup_db(db_url).await.unwrap();
 
     let mut reader = TkFile::open(vcf_path)
         .await
@@ -59,7 +59,7 @@ pub async fn load_vcf(vcf_path: PathBuf) -> PyResult<()> {
 
     let mut records = reader.records();
 
-    let db_pool = get_db_connection().await.unwrap();
+    let db_pool = get_db_connection(db_url).await.unwrap();
 
     while let Some(record) = records.try_next().await? {
         let vrs_ids = get_vrs_ids(record.info(), &header).unwrap();

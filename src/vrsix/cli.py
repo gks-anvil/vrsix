@@ -38,7 +38,7 @@ def load(vcfs: tuple[Path], db_location: Path | None) -> None:
     if db_location and db_location.is_dir():
         db_location = db_location / "vrs_vcf_index.db"
     for vcf in vcfs:
-        load_vcf.load_vcf(vcf)
+        load_vcf.load_vcf(vcf, db_location)
 
 
 @cli.command()
