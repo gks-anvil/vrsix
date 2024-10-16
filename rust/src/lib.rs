@@ -5,9 +5,9 @@ use std::path::PathBuf;
 use tokio::runtime::Runtime;
 
 #[pyfunction]
-pub fn vcf_to_sqlite(vcf_path: PathBuf) -> PyResult<()> {
+pub fn vcf_to_sqlite(vcf_path: PathBuf, db_url: String) -> PyResult<()> {
     let rt = Runtime::new().unwrap();
-    _ = rt.block_on(load::load_vcf(vcf_path));
+    _ = rt.block_on(load::load_vcf(vcf_path, &db_url));
     Ok(())
 }
 

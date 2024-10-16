@@ -1,14 +1,9 @@
 """Fetch data from a SQLite index to support tabix-based lookups."""
 
-import os
 import sqlite3
 from pathlib import Path
 
-DEFAULT_SQLITE_LOCATION = Path(
-    os.environ.get(
-        "VRS_VCF_INDEX", Path.home() / ".local" / "share" / "vrs_vcf_index.db"
-    )
-)
+from vrsix.sqlite import DEFAULT_SQLITE_LOCATION
 
 
 def _get_connection(db_location: Path | None) -> sqlite3.Connection:
