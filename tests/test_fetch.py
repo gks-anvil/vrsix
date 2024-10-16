@@ -5,7 +5,7 @@ import pytest
 from vrsix import fetch
 
 
-@pytest.fixture()
+@pytest.fixture(scope="session")
 def fixture_db() -> Path:
     return Path(__file__).parents[0].resolve() / "fixtures" / "index.db"
 
