@@ -64,11 +64,10 @@ def fetch_by_id(
     if not vrs_ids:
         return
     rows = fetch_by_vrs_ids(vrs_ids, db_location)
-    formatted_rows = [(f"ga4gh:VA.{r[0]}", r[1], str(r[2])) for r in rows]
     if output:
-        generate_csv(formatted_rows, output)
+        generate_csv(rows, output)
     else:
-        for row in formatted_rows:
+        for row in rows:
             click.echo(",".join(row))
 
 
@@ -105,9 +104,8 @@ def fetch_by_range(
     :param end: ending position
     """
     rows = vcf_fetch_by_pos_range(chrom, start, end, db_location)
-    formatted_rows = [(f"ga4gh:VA.{r[0]}", r[1], str(r[2])) for r in rows]
     if output:
-        generate_csv(formatted_rows, output)
+        generate_csv(rows, output)
     else:
-        for row in formatted_rows:
+        for row in rows:
             click.echo(",".join(row))

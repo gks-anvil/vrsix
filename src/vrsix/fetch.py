@@ -22,10 +22,13 @@ def fetch_by_vrs_ids(
 ) -> list[tuple]:
     """Access index by VRS ID.
 
-    :param vrs_id: VRS allele hash (i.e. everything after ``"ga4gh:VA."``)
+    :param vrs_id: VRS ID or allele hash
     :param db_location: path to sqlite file (assumed to exist)
     :return: location description tuple if available
     """
+    vrs_ids = [
+        vrs_id[9:] if vrs_id.startswith("ga4gh:VA.") else vrs_id for vrs_id in vrs_ids
+    ]
     conn = _get_connection(db_location)
     # have to manually make placeholders for python sqlite API --
     # should still be safe against injection by using parameterized query
@@ -36,7 +39,7 @@ def fetch_by_vrs_ids(
     )
     data = result.fetchall()
     conn.close()
-    return data
+    return [(f"ga4gh:VA.{row[0]}", row[1], row[2]) for row in data]
 
 
 def fetch_by_pos_range(
@@ -56,4 +59,4 @@ def fetch_by_pos_range(
     )
     data = result.fetchall()
     conn.close()
-    return data
+    return [(f"ga4gh:VA.{row[0]}", row[1], row[2]) for row in data]
