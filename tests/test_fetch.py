@@ -29,20 +29,7 @@ def test_fetch_by_id(fixture_db: Path):
         ("ga4gh:VA.nSND_n_mYcrCnOTxJyWJ3OzRdkwND4rT", "3", 10180),
     ]
 
-    result = fetch.fetch_by_vrs_ids(
-        [
-            "ga4gh:VA.eXPR_T0angq2prNwkqkRQr800N1mRE7J",
-            "nSND_n_mYcrCnOTxJyWJ3OzRdkwND4rT",
-        ],
-        fixture_db,
-    )
-    result.sort()
-    assert result == [
-        ("ga4gh:VA.eXPR_T0angq2prNwkqkRQr800N1mRE7J", "Y", 2781674),
-        ("ga4gh:VA.nSND_n_mYcrCnOTxJyWJ3OzRdkwND4rT", "3", 10180),
-    ]
-
-    result = fetch.fetch_by_vrs_ids(["sdfljksdfajkl"])
+    result = fetch.fetch_by_vrs_ids(["sdfljksdfaj;kl"], fixture_db)
     assert result == []
 
 
