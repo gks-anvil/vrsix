@@ -67,8 +67,3 @@ cargo fmt
 <!--```shell-->
 <!--pytest-->
 <!--```-->
-
-## Running limitations/todo
-
-* DB location for `load` actions is currently hardcoded as `./sqlite.db` on the Rust side
-* No tests :(
