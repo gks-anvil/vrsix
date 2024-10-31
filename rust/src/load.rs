@@ -62,7 +62,6 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
     let db_pool = get_db_connection(db_url).await.unwrap();
 
     while let Some(record) = records.try_next().await? {
-        println!("{:?}", record);
         let vrs_ids = get_vrs_ids(record.info(), &header).unwrap();
         let chrom = record.reference_sequence_name();
         let pos = record.variant_start().unwrap()?.get();
