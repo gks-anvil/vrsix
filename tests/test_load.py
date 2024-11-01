@@ -49,3 +49,9 @@ def test_error_cases(fixture_dir: Path, temp_dir: Path):
     db = fixture_dir / "not_a_db.db"
     with pytest.raises(load.SqliteFileError):
         load.load_vcf(input_vcf, db)
+
+    # test handling of invalid vcf
+    input_vcf = fixture_dir / "invalid_vcf.vcf"
+    db = temp_dir / "another_db.db"
+    with pytest.raises(load.VcfError):
+        load.load_vcf(input_vcf, db)
