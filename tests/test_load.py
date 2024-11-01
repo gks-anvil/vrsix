@@ -35,3 +35,10 @@ def test_load(fixture_dir: Path, temp_dir: Path):
         (10, "OTiBHLE2WW93M4-4zGVrWSqP2GBj8-qM", "1", 797392),
     ]
     conn.close()
+
+
+def test_error_cases(temp_dir: Path):
+    input_vcf = Path() / "input.vcf"  # doesn't exist
+    temp_db = temp_dir / "tmp.db"
+    with pytest.raises(FileNotFoundError):
+        load.load_vcf(input_vcf, temp_db)

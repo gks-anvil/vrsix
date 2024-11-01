@@ -4,7 +4,7 @@ use noodles_vcf::{
     self as vcf,
     variant::record::info::{self, field::Value as InfoValue},
 };
-use pyo3::prelude::*;
+use pyo3::{exceptions::PyFileNotFoundError, prelude::*};
 use sqlx::SqlitePool;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -48,6 +48,12 @@ fn get_vrs_ids(
 
 pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
     let start = Instant::now();
+
+    if !vcf_path.exists() || !vcf_path.is_file() {
+        return Err(PyFileNotFoundError::new_err(
+            "Input path does not lead to an exist",
+        ));
+    }
 
     setup_db(db_url).await.unwrap();
 
