@@ -2,8 +2,10 @@
 
 from pathlib import Path
 
-from vrsix._core import vcf_to_sqlite
+from vrsix._core import SqliteFileError, vcf_to_sqlite
 from vrsix.sqlite import DEFAULT_SQLITE_LOCATION
+
+__all__ = ["load_vcf", "vcf_to_sqlite", "SqliteFileError"]
 
 
 def load_vcf(vcf_path: Path, db_location: Path | None = None) -> None:

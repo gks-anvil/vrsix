@@ -1,4 +1,4 @@
-use pyo3::prelude::*;
+use pyo3::{create_exception, exceptions, prelude::*, Python};
 mod load;
 mod sqlite;
 use std::path::PathBuf;
@@ -11,8 +11,12 @@ pub fn vcf_to_sqlite(vcf_path: PathBuf, db_url: String) -> PyResult<()> {
     Ok(())
 }
 
+create_exception!(loading_module, SqliteFileError, exceptions::PyException);
+
 #[pymodule]
 #[pyo3(name = "_core")]
-fn loading_module(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_function(wrap_pyfunction!(vcf_to_sqlite, m)?)
+fn loading_module(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
+    let _ = m.add_function(wrap_pyfunction!(vcf_to_sqlite, m)?);
+    m.add("SqliteFileError", py.get_type_bound::<SqliteFileError>())?;
+    Ok(())
 }

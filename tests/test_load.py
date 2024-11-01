@@ -37,8 +37,15 @@ def test_load(fixture_dir: Path, temp_dir: Path):
     conn.close()
 
 
-def test_error_cases(temp_dir: Path):
-    input_vcf = Path() / "input.vcf"  # doesn't exist
+def test_error_cases(fixture_dir: Path, temp_dir: Path):
+    # test file doesn't exist
+    input_vcf = Path() / "input.vcf"
     temp_db = temp_dir / "tmp.db"
     with pytest.raises(FileNotFoundError):
         load.load_vcf(input_vcf, temp_db)
+
+    # test handling of invalid sqlite file
+    input_vcf = fixture_dir / "input.vcf"
+    db = fixture_dir / "not_a_db.db"
+    with pytest.raises(load.SqliteFileError):
+        load.load_vcf(input_vcf, db)
