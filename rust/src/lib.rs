@@ -14,6 +14,7 @@ pub fn vcf_to_sqlite(vcf_path: PathBuf, db_url: String) -> PyResult<()> {
 create_exception!(loading_module, VrsixError, exceptions::PyException);
 create_exception!(loading_module, SqliteFileError, VrsixError);
 create_exception!(loading_module, VcfError, VrsixError);
+create_exception!(loading_module, VrsixDbError, VrsixError);
 
 #[pymodule]
 #[pyo3(name = "_core")]
@@ -22,5 +23,6 @@ fn loading_module(py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("VrsixError", py.get_type_bound::<VrsixError>())?;
     m.add("SqliteFileError", py.get_type_bound::<SqliteFileError>())?;
     m.add("VcfError", py.get_type_bound::<VcfError>())?;
+    m.add("VrsixDbError", py.get_type_bound::<VrsixDbError>())?;
     Ok(())
 }
