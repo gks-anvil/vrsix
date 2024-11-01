@@ -13,7 +13,7 @@ pub async fn setup_db(db_url: &str) -> Result<(), Error> {
             Err(error) => panic!("Error: {}", error),
         }
     } else {
-        println!("DB exists")
+        println!("DB exists") // TODO log instead
     }
 
     let db = get_db_connection(db_url).await?;
@@ -27,8 +27,7 @@ pub async fn setup_db(db_url: &str) -> Result<(), Error> {
         );",
     )
     .execute(&db)
-    .await
-    .unwrap();
+    .await?;
     println!("created table result: {:?}", result);
     Ok(())
 }

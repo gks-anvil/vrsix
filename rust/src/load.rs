@@ -1,10 +1,11 @@
 use crate::sqlite::{get_db_connection, setup_db, DbRow};
+use crate::{SqliteFileError, VcfError, VrsixDbError};
 use futures::TryStreamExt;
 use noodles_vcf::{
     self as vcf,
     variant::record::info::{self, field::Value as InfoValue},
 };
-use pyo3::prelude::*;
+use pyo3::{exceptions, prelude::*};
 use sqlx::SqlitePool;
 use std::path::PathBuf;
 use std::time::Instant;
@@ -21,10 +22,7 @@ async fn load_allele(db_row: DbRow, pool: &SqlitePool) -> Result<(), Box<dyn std
     Ok(())
 }
 
-fn get_vrs_ids(
-    info: vcf::record::Info,
-    header: &vcf::Header,
-) -> Result<Vec<String>, Box<dyn std::error::Error>> {
+fn get_vrs_ids(info: vcf::record::Info, header: &vcf::Header) -> Result<Vec<String>, PyErr> {
     if let Some(Ok(Some(InfoValue::Array(array)))) = info.get(header, "VRS_Allele_IDs") {
         if let info::field::value::Array::String(array_elements) = array {
             let vec = array_elements
@@ -33,23 +31,25 @@ fn get_vrs_ids(
                 .collect();
             return Ok(vec);
         } else {
-            Err(Box::new(std::io::Error::new(
-                std::io::ErrorKind::Other,
-                "Expected string Array variant",
-            )))
+            Err(VcfError::new_err("expected string array variant"))
         }
     } else {
-        Err(Box::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "Expected Array variant",
-        )))
+        Err(VcfError::new_err("Expected Array variant"))
     }
 }
 
 pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
     let start = Instant::now();
 
-    setup_db(db_url).await.unwrap();
+    if !vcf_path.exists() || !vcf_path.is_file() {
+        return Err(exceptions::PyFileNotFoundError::new_err(
+            "Input path does not lead to an exist",
+        ));
+    }
+
+    setup_db(db_url).await.map_err(|_| {
+        SqliteFileError::new_err("Unable to open DB file -- is it a valid sqlite file?")
+    })?;
 
     let mut reader = TkFile::open(vcf_path)
         .await
@@ -59,10 +59,12 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
 
     let mut records = reader.records();
 
-    let db_pool = get_db_connection(db_url).await.unwrap();
+    let db_pool = get_db_connection(db_url)
+        .await
+        .map_err(|e| VrsixDbError::new_err(format!("Failed database connection/call: {}", e)))?;
 
     while let Some(record) = records.try_next().await? {
-        let vrs_ids = get_vrs_ids(record.info(), &header).unwrap();
+        let vrs_ids = get_vrs_ids(record.info(), &header)?;
         let chrom = record.reference_sequence_name();
         let pos = record.variant_start().unwrap()?.get();
 
@@ -75,7 +77,9 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
                 chr: chrom.strip_prefix("chr").unwrap_or(chrom).to_string(),
                 pos: pos.try_into().unwrap(),
             };
-            load_allele(row, &db_pool).await.unwrap();
+            load_allele(row, &db_pool)
+                .await
+                .map_err(|e| VrsixDbError::new_err(format!("Failed to load row: {}", e)))?;
         }
     }
 
