@@ -1,5 +1,5 @@
 use crate::sqlite::{get_db_connection, setup_db, DbRow};
-use crate::{SqliteFileError, VcfError, VrsixDbError};
+use crate::{FiletypeError, SqliteFileError, VcfError, VrsixDbError};
 use futures::TryStreamExt;
 use noodles_bgzf::{self as bgzf, r#async::Reader as BgzfReader};
 use noodles_vcf::{
@@ -60,9 +60,7 @@ async fn get_reader(vcf_path: PathBuf) -> Result<VcfReader<BgzfReader<BufReader<
         //    })?;
         //    Ok(VcfReader::new(BufReader::new(file)))
         //}
-        _ => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
-            "Unsupported file extension",
-        )),
+        _ => Err(PyErr::new::<FiletypeError, _>("Unsupported file extension")),
     }
 }
 

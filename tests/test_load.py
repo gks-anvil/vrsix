@@ -50,8 +50,13 @@ def test_error_cases(fixture_dir: Path, temp_dir: Path):
     with pytest.raises(load.SqliteFileError):
         load.load_vcf(input_vcf, db)
 
+    # test unsupported filetype
+    input_file = fixture_dir / "wrong_file_extension.bam"
+    db = temp_dir / "another_db.db"
+    with pytest.raises(load.FiletypeError):
+        load.load_vcf(input_file, db)
+
     # test handling of invalid vcf
     input_vcf = fixture_dir / "invalid_vcf.vcf"
-    db = temp_dir / "another_db.db"
     with pytest.raises(load.VcfError):
         load.load_vcf(input_vcf, db)
