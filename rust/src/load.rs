@@ -1,8 +1,10 @@
 use crate::sqlite::{get_db_connection, setup_db, DbRow};
 use crate::{SqliteFileError, VcfError, VrsixDbError};
 use futures::TryStreamExt;
+use noodles_bgzf::{self as bgzf, r#async::Reader as BgzfReader};
 use noodles_vcf::{
     self as vcf,
+    r#async::io::Reader as VcfReader,
     variant::record::info::{self, field::Value as InfoValue},
 };
 use pyo3::{exceptions, prelude::*};
@@ -38,6 +40,32 @@ fn get_vrs_ids(info: vcf::record::Info, header: &vcf::Header) -> Result<Vec<Stri
     }
 }
 
+async fn get_reader(vcf_path: PathBuf) -> Result<VcfReader<BgzfReader<BufReader<TkFile>>>, PyErr> {
+    match vcf_path.extension().and_then(|ext| ext.to_str()) {
+        Some("gz") => {
+            let file = TkFile::open(vcf_path).await.map_err(|e| {
+                PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+                    "Failed to open file: {}",
+                    e
+                ))
+            })?;
+            Ok(VcfReader::new(BgzfReader::new(BufReader::new(file))))
+        }
+        //Some("vcf") => {
+        //    let file = TkFile::open(vcf_path).await.map_err(|e| {
+        //        PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
+        //            "Failed to open file: {}",
+        //            e
+        //        ))
+        //    })?;
+        //    Ok(VcfReader::new(BufReader::new(file)))
+        //}
+        _ => Err(PyErr::new::<pyo3::exceptions::PyValueError, _>(
+            "Unsupported file extension",
+        )),
+    }
+}
+
 pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
     let start = Instant::now();
 
@@ -51,10 +79,7 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
         SqliteFileError::new_err("Unable to open DB file -- is it a valid sqlite file?")
     })?;
 
-    let mut reader = TkFile::open(vcf_path)
-        .await
-        .map(BufReader::new)
-        .map(vcf::r#async::io::Reader::new)?;
+    let mut reader = get_reader(vcf_path).await?;
     let header = reader.read_header().await?;
 
     let mut records = reader.records();
