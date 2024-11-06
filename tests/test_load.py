@@ -59,6 +59,9 @@ def test_load_gz(fixture_dir: Path, temp_dir: Path):
     ]
     conn.close()
 
+    with pytest.raises(OSError, match="invalid BGZF header"):
+        load.load_vcf(fixture_dir / "input_not_bgzip.vcf.gz", temp_db)
+
 
 def test_error_cases(fixture_dir: Path, temp_dir: Path):
     # test file doesn't exist
