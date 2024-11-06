@@ -36,6 +36,29 @@ def test_load_vcf(fixture_dir: Path, temp_dir: Path):
     ]
     conn.close()
 
+    # test file doesn't exist
+    input_vcf = Path() / "input.vcf"
+    temp_db = temp_dir / "tmp.db"
+    with pytest.raises(FileNotFoundError):
+        load.load_vcf(input_vcf, temp_db)
+
+    # test handling of invalid sqlite file
+    input_vcf = fixture_dir / "input.vcf"
+    db = fixture_dir / "not_a_db.db"
+    with pytest.raises(load.SqliteFileError):
+        load.load_vcf(input_vcf, db)
+
+    # test unsupported filetype
+    input_file = fixture_dir / "wrong_file_extension.bam"
+    db = temp_dir / "another_db.db"
+    with pytest.raises(load.FiletypeError):
+        load.load_vcf(input_file, db)
+
+    # test handling of invalid vcf
+    input_vcf = fixture_dir / "invalid_vcf.vcf"
+    with pytest.raises(load.VcfError):
+        load.load_vcf(input_vcf, db)
+
 
 def test_load_gz(fixture_dir: Path, temp_dir: Path):
     input_vcf = fixture_dir / "input.vcf.gz"
@@ -61,28 +84,3 @@ def test_load_gz(fixture_dir: Path, temp_dir: Path):
 
     with pytest.raises(OSError, match="invalid BGZF header"):
         load.load_vcf(fixture_dir / "input_not_bgzip.vcf.gz", temp_db)
-
-
-def test_error_cases(fixture_dir: Path, temp_dir: Path):
-    # test file doesn't exist
-    input_vcf = Path() / "input.vcf"
-    temp_db = temp_dir / "tmp.db"
-    with pytest.raises(FileNotFoundError):
-        load.load_vcf(input_vcf, temp_db)
-
-    # test handling of invalid sqlite file
-    input_vcf = fixture_dir / "input.vcf"
-    db = fixture_dir / "not_a_db.db"
-    with pytest.raises(load.SqliteFileError):
-        load.load_vcf(input_vcf, db)
-
-    # test unsupported filetype
-    input_file = fixture_dir / "wrong_file_extension.bam"
-    db = temp_dir / "another_db.db"
-    with pytest.raises(load.FiletypeError):
-        load.load_vcf(input_file, db)
-
-    # test handling of invalid vcf
-    input_vcf = fixture_dir / "invalid_vcf.vcf"
-    with pytest.raises(load.VcfError):
-        load.load_vcf(input_vcf, db)
