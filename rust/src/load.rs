@@ -1,7 +1,7 @@
 use crate::sqlite::{get_db_connection, setup_db, DbRow};
 use crate::{FiletypeError, SqliteFileError, VcfError, VrsixDbError};
 use futures::TryStreamExt;
-use noodles_bgzf::{self as bgzf, r#async::Reader as BgzfReader};
+use noodles_bgzf::r#async::Reader as BgzfReader;
 use noodles_vcf::{
     self as vcf,
     r#async::io::Reader as VcfReader,
@@ -11,7 +11,7 @@ use pyo3::{exceptions, prelude::*};
 use sqlx::SqlitePool;
 use std::path::PathBuf;
 use std::time::Instant;
-use tokio::{fs::File as TkFile, io::BufReader};
+use tokio::{self, fs::File as TkFile, io::BufReader};
 
 async fn load_allele(db_row: DbRow, pool: &SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
     let mut conn = pool.acquire().await?;
@@ -40,27 +40,28 @@ fn get_vrs_ids(info: vcf::record::Info, header: &vcf::Header) -> Result<Vec<Stri
     }
 }
 
-async fn get_reader(vcf_path: PathBuf) -> Result<VcfReader<BgzfReader<BufReader<TkFile>>>, PyErr> {
-    match vcf_path.extension().and_then(|ext| ext.to_str()) {
+async fn get_reader(
+    vcf_path: PathBuf,
+) -> Result<VcfReader<Box<dyn tokio::io::AsyncBufRead + Unpin + Send>>, PyErr> {
+    let file = TkFile::open(vcf_path.clone()).await.map_err(|e| {
+        PyErr::new::<pyo3::exceptions::PyOSError, _>(format!("Failed to open file: {}", e))
+    })?;
+    let ext = vcf_path.extension().and_then(|ext| ext.to_str());
+    match ext {
         Some("gz") => {
-            let file = TkFile::open(vcf_path).await.map_err(|e| {
-                PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
-                    "Failed to open file: {}",
-                    e
-                ))
-            })?;
-            Ok(VcfReader::new(BgzfReader::new(BufReader::new(file))))
+            let reader =
+                Box::new(BgzfReader::new(file)) as Box<dyn tokio::io::AsyncBufRead + Unpin + Send>;
+            Ok(VcfReader::new(reader))
         }
-        //Some("vcf") => {
-        //    let file = TkFile::open(vcf_path).await.map_err(|e| {
-        //        PyErr::new::<pyo3::exceptions::PyValueError, _>(format!(
-        //            "Failed to open file: {}",
-        //            e
-        //        ))
-        //    })?;
-        //    Ok(VcfReader::new(BufReader::new(file)))
-        //}
-        _ => Err(PyErr::new::<FiletypeError, _>("Unsupported file extension")),
+        Some("vcf") => {
+            let reader =
+                Box::new(BufReader::new(file)) as Box<dyn tokio::io::AsyncBufRead + Unpin + Send>;
+            Ok(VcfReader::new(reader))
+        }
+        _ => Err(PyErr::new::<FiletypeError, _>(format!(
+            "Unsupported file extension: {:?}",
+            ext
+        ))),
     }
 }
 
