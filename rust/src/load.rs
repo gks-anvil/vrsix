@@ -11,7 +11,10 @@ use pyo3::{exceptions, prelude::*};
 use sqlx::SqlitePool;
 use std::path::PathBuf;
 use std::time::Instant;
-use tokio::{self, fs::File as TkFile, io::BufReader};
+use tokio::{
+    fs::File as TkFile,
+    io::{AsyncBufRead, BufReader},
+};
 
 async fn load_allele(db_row: DbRow, pool: &SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
     let mut conn = pool.acquire().await?;
@@ -49,13 +52,11 @@ async fn get_reader(
     let ext = vcf_path.extension().and_then(|ext| ext.to_str());
     match ext {
         Some("gz") => {
-            let reader =
-                Box::new(BgzfReader::new(file)) as Box<dyn tokio::io::AsyncBufRead + Unpin + Send>;
+            let reader = Box::new(BgzfReader::new(file)) as Box<dyn AsyncBufRead + Unpin + Send>;
             Ok(VcfReader::new(reader))
         }
         Some("vcf") => {
-            let reader =
-                Box::new(BufReader::new(file)) as Box<dyn tokio::io::AsyncBufRead + Unpin + Send>;
+            let reader = Box::new(BufReader::new(file)) as Box<dyn AsyncBufRead + Unpin + Send>;
             Ok(VcfReader::new(reader))
         }
         _ => Err(PyErr::new::<FiletypeError, _>(format!(
