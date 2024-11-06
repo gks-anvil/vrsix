@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from vrsix._core import (
+    FiletypeError,
     SqliteFileError,
     VcfError,
     VrsixDbError,
@@ -14,6 +15,7 @@ from vrsix.sqlite import DEFAULT_SQLITE_LOCATION
 __all__ = [
     "load_vcf",
     "vcf_to_sqlite",
+    "FiletypeError",
     "SqliteFileError",
     "VrsixError",
     "VcfError",
