@@ -71,7 +71,7 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
 
     if !vcf_path.exists() || !vcf_path.is_file() {
         return Err(exceptions::PyFileNotFoundError::new_err(
-            "Input path does not lead to an exist",
+            "Input path does not lead to an existing file",
         ));
     }
 
