@@ -1,3 +1,4 @@
+use log::info;
 use sqlx::{migrate::MigrateDatabase, Error, Sqlite, SqlitePool};
 
 pub async fn get_db_connection(db_url: &str) -> Result<SqlitePool, Error> {
@@ -7,13 +8,13 @@ pub async fn get_db_connection(db_url: &str) -> Result<SqlitePool, Error> {
 
 pub async fn setup_db(db_url: &str) -> Result<(), Error> {
     if !Sqlite::database_exists(db_url).await.unwrap_or(false) {
-        println!("Creating DB {}", db_url);
+        info!("Creating DB {}", db_url);
         match Sqlite::create_database(db_url).await {
-            Ok(_) => println!("Created DB"),
-            Err(error) => panic!("Error: {}", error),
+            Ok(_) => info!("Created DB"),
+            Err(error) => return Err(error),
         }
     } else {
-        println!("DB exists") // TODO log instead
+        info!("DB exists")
     }
 
     let db = get_db_connection(db_url).await?;
@@ -28,7 +29,7 @@ pub async fn setup_db(db_url: &str) -> Result<(), Error> {
     )
     .execute(&db)
     .await?;
-    println!("created table result: {:?}", result);
+    info!("created table result: {:?}", result);
     Ok(())
 }
 
