@@ -1,6 +1,7 @@
 use crate::sqlite::{get_db_connection, setup_db, DbRow};
 use crate::{FiletypeError, SqliteFileError, VcfError, VrsixDbError};
 use futures::TryStreamExt;
+use log::{error, info};
 use noodles_bgzf::r#async::Reader as BgzfReader;
 use noodles_vcf::{
     self as vcf,
@@ -36,9 +37,14 @@ fn get_vrs_ids(info: vcf::record::Info, header: &vcf::Header) -> Result<Vec<Stri
                 .collect();
             return Ok(vec);
         } else {
+            error!("Unable to unpack `{:?}` as an array of values", array);
             Err(VcfError::new_err("expected string array variant"))
         }
     } else {
+        error!(
+            "Unable to unpack VRS_Allele_IDs from info fields: {:?}. Are annotations available?",
+            info
+        );
         Err(VcfError::new_err("Expected Array variant"))
     }
 }
@@ -59,10 +65,16 @@ async fn get_reader(
             let reader = Box::new(BufReader::new(file)) as Box<dyn AsyncBufRead + Unpin + Send>;
             Ok(VcfReader::new(reader))
         }
-        _ => Err(PyErr::new::<FiletypeError, _>(format!(
-            "Unsupported file extension: {:?}",
-            ext
-        ))),
+        _ => {
+            error!(
+                "Unexpected file extension `{:?}` for input file `{:?}`",
+                ext, vcf_path
+            );
+            Err(PyErr::new::<FiletypeError, _>(format!(
+                "Unsupported file extension: {:?}",
+                ext
+            )))
+        }
     }
 }
 
@@ -70,12 +82,14 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
     let start = Instant::now();
 
     if !vcf_path.exists() || !vcf_path.is_file() {
+        error!("Input file `{:?}` does not appear to exist", vcf_path);
         return Err(exceptions::PyFileNotFoundError::new_err(
             "Input path does not lead to an existing file",
         ));
     }
 
     setup_db(db_url).await.map_err(|_| {
+        error!("Unable to open input file `{:?}` into sqlite", db_url);
         SqliteFileError::new_err("Unable to open DB file -- is it a valid sqlite file?")
     })?;
 
@@ -84,9 +98,10 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
 
     let mut records = reader.records();
 
-    let db_pool = get_db_connection(db_url)
-        .await
-        .map_err(|e| VrsixDbError::new_err(format!("Failed database connection/call: {}", e)))?;
+    let db_pool = get_db_connection(db_url).await.map_err(|e| {
+        error!("DB connection failed: {}", e);
+        VrsixDbError::new_err(format!("Failed database connection/call: {}", e))
+    })?;
 
     while let Some(record) = records.try_next().await? {
         let vrs_ids = get_vrs_ids(record.info(), &header)?;
@@ -102,13 +117,14 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
                 chr: chrom.strip_prefix("chr").unwrap_or(chrom).to_string(),
                 pos: pos.try_into().unwrap(),
             };
-            load_allele(row, &db_pool)
-                .await
-                .map_err(|e| VrsixDbError::new_err(format!("Failed to load row: {}", e)))?;
+            load_allele(row, &db_pool).await.map_err(|e| {
+                error!("Failed to load row {:?}", e);
+                VrsixDbError::new_err(format!("Failed to load row: {}", e))
+            })?;
         }
     }
 
     let duration = start.elapsed();
-    println!("Time taken: {:?}", duration);
+    info!("Time taken: {:?}", duration);
     Ok(())
 }
