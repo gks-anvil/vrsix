@@ -9,7 +9,7 @@ use noodles_vcf::{
     variant::record::info::{self, field::Value as InfoValue},
 };
 use pyo3::{exceptions, prelude::*};
-use sqlx::SqlitePool;
+use sqlx::{error::DatabaseError, sqlite::SqliteError, SqlitePool};
 use std::path::PathBuf;
 use std::time::Instant;
 use tokio::{
@@ -19,12 +19,27 @@ use tokio::{
 
 async fn load_allele(db_row: DbRow, pool: &SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
     let mut conn = pool.acquire().await?;
-    sqlx::query("INSERT INTO vrs_locations (vrs_id, chr, pos) VALUES (?, ?, ?)")
+    let result = sqlx::query("INSERT INTO vrs_locations (vrs_id, chr, pos) VALUES (?, ?, ?)")
         .bind(db_row.vrs_id)
         .bind(db_row.chr)
         .bind(db_row.pos)
         .execute(&mut *conn)
-        .await?;
+        .await;
+    if let Err(err) = result {
+        if let Some(db_error) = err.as_database_error() {
+            if let Some(sqlite_error) = db_error.try_downcast_ref::<SqliteError>() {
+                if sqlite_error
+                    .code()
+                    .map(|code| code == "2067")
+                    .unwrap_or(false)
+                {
+                    error!("duplicate");
+                    return Ok(());
+                }
+            }
+        }
+        return Err(err.into());
+    }
     Ok(())
 }
 

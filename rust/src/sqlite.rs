@@ -24,7 +24,8 @@ pub async fn setup_db(db_url: &str) -> Result<(), Error> {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             vrs_id TEXT NOT NULL,
             chr TEXT NOT NULL,
-            pos INTEGER NOT NULL
+            pos INTEGER NOT NULL,
+            UNIQUE(vrs_id,chr,pos)
         );",
     )
     .execute(&db)
