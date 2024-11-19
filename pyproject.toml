@@ -148,8 +148,23 @@ ignore = [
 # D301 - escape-sequence-in-docstring
 # S101 - assert
 # B011 - assert-false
+# D100 - undocumented-public-module
+# D101 - undocumented-public-class
+# D102 - undocumented-public-method
+# D103 - undocumented-public-function
 # INP001 - implicit-namespace-package
-"tests/*" = ["ANN001", "ANN2", "ANN102", "S101", "B011", "INP001", "D100", "D103"]
+"tests/*" = [
+    "ANN001",
+    "ANN2",
+    "ANN102",
+    "S101",
+    "B011",
+    "INP001",
+    "D100",
+    "D101",
+    "D102",
+    "D103"
+]
 "src/vrsix/cli.py" = ["D301"]
 
 [tool.ruff.format]
