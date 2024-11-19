@@ -62,8 +62,7 @@ cd rust/
 cargo fmt
 ```
 
-<!--Run tests with `pytest`:-->
-<!---->
-<!--```shell-->
-<!--pytest-->
-<!--```-->
+Run tests with `pytest`:
+```shell
+pytest
+```
