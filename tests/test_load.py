@@ -71,3 +71,13 @@ def test_non_block_gzip(fixture_dir: Path, temp_dir: Path):
     temp_db = temp_dir / "tmp.db"
     with pytest.raises(OSError, match="invalid BGZF header"):
         load.load_vcf(fixture_dir / "input_not_bgzip.vcf.gz", temp_db)
+
+
+def test_load_redundant_rows(fixture_dir: Path, temp_dir: Path):
+    input_file = fixture_dir / "input.vcf"
+    temp_db = temp_dir / "tmp.db"
+    load.load_vcf(input_file, temp_db)
+    load.load_vcf(input_file, temp_db)
+    conn = sqlite3.connect(temp_db)
+    results = conn.execute("SELECT * FROM vrs_locations").fetchall()
+    assert len(results) == 10
