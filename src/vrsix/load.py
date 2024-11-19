@@ -1,5 +1,6 @@
 """Load VCFs into sqlite index."""
 
+import logging
 from pathlib import Path
 
 from vrsix._core import (
@@ -22,6 +23,8 @@ __all__ = [
     "VrsixDbError",
 ]
 
+_logger = logging.getLogger(__name__)
+
 
 def load_vcf(vcf_path: Path, db_location: Path | None = None) -> None:
     """Load VRS-annotated VCF into sqlite database.
@@ -34,4 +37,5 @@ def load_vcf(vcf_path: Path, db_location: Path | None = None) -> None:
         if db_location is None
         else f"sqlite://{db_location}"
     )
+    _logger.debug("Using sqlite file located at %s", sqlite_uri)
     vcf_to_sqlite(vcf_path, sqlite_uri)
