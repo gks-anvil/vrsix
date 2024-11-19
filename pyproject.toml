@@ -1,5 +1,5 @@
 [project]
-name = "vrsix"
+name = "gks_anvil.vrsix"
 version = "0.0.1"
 authors = [
     {name = "James Stevenson"},

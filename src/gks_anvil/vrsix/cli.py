@@ -4,10 +4,10 @@ from pathlib import Path
 
 import click
 
-from vrsix import load as load_vcf
-from vrsix.fetch import fetch_by_pos_range as vcf_fetch_by_pos_range
-from vrsix.fetch import fetch_by_vrs_ids
-from vrsix.output import generate_csv
+from gks_anvil.vrsix import load as load_vcf
+from gks_anvil.vrsix.fetch import fetch_by_pos_range as vcf_fetch_by_pos_range
+from gks_anvil.vrsix.fetch import fetch_by_vrs_ids
+from gks_anvil.vrsix.output import generate_csv
 
 
 @click.group()
@@ -34,7 +34,7 @@ def load(vcfs: tuple[Path], db_location: Path | None) -> None:
 
     \f
     :param vcf_path: path to VCF to ingest
-    """
+    """  # noqa: D301
     if db_location and db_location.is_dir():
         db_location = db_location / "vrs_vcf_index.db"
     for vcf in vcfs:

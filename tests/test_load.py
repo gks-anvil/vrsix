@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from vrsix import load
+from gks_anvil.vrsix import load
 
 
 @pytest.fixture()

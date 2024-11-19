@@ -3,7 +3,7 @@
 import sqlite3
 from pathlib import Path
 
-from vrsix.sqlite import DEFAULT_SQLITE_LOCATION
+from gks_anvil.vrsix.sqlite import DEFAULT_SQLITE_LOCATION
 
 
 def _get_connection(db_location: Path | None) -> sqlite3.Connection:

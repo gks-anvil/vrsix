@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from vrsix import fetch
+from gks_anvil.vrsix import fetch
 
 
 @pytest.fixture()

@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from vrsix._core import (
+from gks_anvil.vrsix._core import (
     FiletypeError,
     SqliteFileError,
     VcfError,
@@ -10,7 +10,7 @@ from vrsix._core import (
     VrsixError,
     vcf_to_sqlite,
 )
-from vrsix.sqlite import DEFAULT_SQLITE_LOCATION
+from gks_anvil.vrsix.sqlite import DEFAULT_SQLITE_LOCATION
 
 __all__ = [
     "load_vcf",
