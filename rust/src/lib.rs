@@ -5,9 +5,12 @@ use std::path::PathBuf;
 use tokio::runtime::Runtime;
 
 #[pyfunction]
-pub fn vcf_to_sqlite(vcf_path: PathBuf, db_url: String) -> PyResult<()> {
+#[pyo3(signature = (vcf_path, db_url, vcf_uri = None))]
+pub fn vcf_to_sqlite(vcf_path: PathBuf, db_url: String, vcf_uri: Option<String>) -> PyResult<()> {
+    let uri_value =
+        vcf_uri.unwrap_or_else(|| format!("file://{}", vcf_path.to_string_lossy().into_owned()));
     let rt = Runtime::new().unwrap();
-    rt.block_on(load::load_vcf(vcf_path, &db_url))?;
+    rt.block_on(load::load_vcf(vcf_path, &db_url, uri_value))?;
     Ok(())
 }
 

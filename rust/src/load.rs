@@ -19,12 +19,14 @@ use tokio::{
 
 async fn load_allele(db_row: DbRow, pool: &SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
     let mut conn = pool.acquire().await?;
-    let result = sqlx::query("INSERT INTO vrs_locations (vrs_id, chr, pos) VALUES (?, ?, ?)")
-        .bind(db_row.vrs_id)
-        .bind(db_row.chr)
-        .bind(db_row.pos)
-        .execute(&mut *conn)
-        .await;
+    let result =
+        sqlx::query("INSERT INTO vrs_locations (vrs_id, chr, pos, uri) VALUES (?, ?, ?, ?)")
+            .bind(db_row.vrs_id)
+            .bind(db_row.chr)
+            .bind(db_row.pos)
+            .bind(db_row.uri)
+            .execute(&mut *conn)
+            .await;
     if let Err(err) = result {
         if let Some(db_error) = err.as_database_error() {
             if let Some(sqlite_error) = db_error.try_downcast_ref::<SqliteError>() {
@@ -93,7 +95,7 @@ async fn get_reader(
     }
 }
 
-pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
+pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<()> {
     let start = Instant::now();
 
     if !vcf_path.exists() || !vcf_path.is_file() {
@@ -131,6 +133,7 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str) -> PyResult<()> {
                     .to_string(),
                 chr: chrom.strip_prefix("chr").unwrap_or(chrom).to_string(),
                 pos: pos.try_into().unwrap(),
+                uri: uri.clone(),
             };
             load_allele(row, &db_pool).await.map_err(|e| {
                 error!("Failed to load row {:?}", e);

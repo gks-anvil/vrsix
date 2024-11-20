@@ -22,18 +22,43 @@ def test_load(fixture_dir: Path, temp_dir: Path, input_filename: str):
 
     conn = sqlite3.connect(temp_db)
     results = conn.execute("SELECT * FROM vrs_locations").fetchall()
+    expected_uri = input_file.as_uri()
     assert len(results) == 10
     assert results == [
-        (1, "dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG", "1", 783006),
-        (2, "MiasxyXMXtOpsZgGelL3c4QgtflCNLHD", "1", 783006),
-        (3, "5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p", "1", 783175),
-        (4, "jHaXepIvlbnapfPtH_62y-Qm81hCrBYn", "1", 783175),
-        (5, "-NGsjBEx0UbPF3uYjStZ_2r-m2LbUtUB", "1", 784860),
-        (6, "HLinVo6Q-i-PryQOiq8QAtOeC9oQ9Q3p", "1", 784860),
-        (7, "qdyeeiC3cLfXeT23zxT9-qlJNN64MKVB", "1", 785417),
-        (8, "cNWXR3OLq9D3L19vQFvbHw-aH0vlA5cN", "1", 785417),
-        (9, "DVMcfA37Llc9QUOA0XfLJbJ-agKyGpGo", "1", 797392),
-        (10, "OTiBHLE2WW93M4-4zGVrWSqP2GBj8-qM", "1", 797392),
+        (1, "dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG", "1", 783006, expected_uri),
+        (2, "MiasxyXMXtOpsZgGelL3c4QgtflCNLHD", "1", 783006, expected_uri),
+        (3, "5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p", "1", 783175, expected_uri),
+        (4, "jHaXepIvlbnapfPtH_62y-Qm81hCrBYn", "1", 783175, expected_uri),
+        (5, "-NGsjBEx0UbPF3uYjStZ_2r-m2LbUtUB", "1", 784860, expected_uri),
+        (6, "HLinVo6Q-i-PryQOiq8QAtOeC9oQ9Q3p", "1", 784860, expected_uri),
+        (7, "qdyeeiC3cLfXeT23zxT9-qlJNN64MKVB", "1", 785417, expected_uri),
+        (8, "cNWXR3OLq9D3L19vQFvbHw-aH0vlA5cN", "1", 785417, expected_uri),
+        (9, "DVMcfA37Llc9QUOA0XfLJbJ-agKyGpGo", "1", 797392, expected_uri),
+        (10, "OTiBHLE2WW93M4-4zGVrWSqP2GBj8-qM", "1", 797392, expected_uri),
+    ]
+    conn.close()
+
+
+def test_load_specify_uri(fixture_dir: Path, temp_dir: Path):
+    input_file = fixture_dir / "input.vcf"
+    temp_db = temp_dir / "tmp.db"
+    uri = "gs://fc-secure-00000000-0000-0000-0000-00000000/files/input.vcf"
+    load.load_vcf(input_file, temp_db, uri)
+
+    conn = sqlite3.connect(temp_db)
+    results = conn.execute("SELECT * FROM vrs_locations").fetchall()
+    assert len(results) == 10
+    assert results == [
+        (1, "dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG", "1", 783006, uri),
+        (2, "MiasxyXMXtOpsZgGelL3c4QgtflCNLHD", "1", 783006, uri),
+        (3, "5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p", "1", 783175, uri),
+        (4, "jHaXepIvlbnapfPtH_62y-Qm81hCrBYn", "1", 783175, uri),
+        (5, "-NGsjBEx0UbPF3uYjStZ_2r-m2LbUtUB", "1", 784860, uri),
+        (6, "HLinVo6Q-i-PryQOiq8QAtOeC9oQ9Q3p", "1", 784860, uri),
+        (7, "qdyeeiC3cLfXeT23zxT9-qlJNN64MKVB", "1", 785417, uri),
+        (8, "cNWXR3OLq9D3L19vQFvbHw-aH0vlA5cN", "1", 785417, uri),
+        (9, "DVMcfA37Llc9QUOA0XfLJbJ-agKyGpGo", "1", 797392, uri),
+        (10, "OTiBHLE2WW93M4-4zGVrWSqP2GBj8-qM", "1", 797392, uri),
     ]
     conn.close()
 

@@ -25,7 +25,8 @@ pub async fn setup_db(db_url: &str) -> Result<(), Error> {
             vrs_id TEXT NOT NULL,
             chr TEXT NOT NULL,
             pos INTEGER NOT NULL,
-            UNIQUE(vrs_id,chr,pos)
+            uri TEXT NOT NULL,
+            UNIQUE(vrs_id, chr, pos, uri)
         );",
     )
     .execute(&db)
@@ -39,4 +40,5 @@ pub struct DbRow {
     pub vrs_id: String,
     pub chr: String,
     pub pos: i64,
+    pub uri: String,
 }
