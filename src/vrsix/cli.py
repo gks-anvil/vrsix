@@ -31,11 +31,16 @@ def cli() -> None:
 
 @cli.command()
 @click.argument(
-    "vcfs",
+    "vcf",
     type=click.Path(
         exists=True, file_okay=True, dir_okay=False, readable=True, path_type=Path
     ),
-    nargs=-1,
+    nargs=1,
+)
+@click.argument(
+    "uri",
+    default=None,
+    required=False,
 )
 @click.option(
     "--db-location",
@@ -43,7 +48,7 @@ def cli() -> None:
         file_okay=True, dir_okay=True, readable=True, writable=True, path_type=Path
     ),
 )
-def load(vcfs: tuple[Path], db_location: Path | None) -> None:
+def load(vcf: Path, uri: str, db_location: Path | None) -> None:
     """Index the VRS annotations in a VCF by loading it into the sqlite DB.
 
     \f
@@ -51,11 +56,10 @@ def load(vcfs: tuple[Path], db_location: Path | None) -> None:
     """
     if db_location and db_location.is_dir():
         db_location = db_location / "vrs_vcf_index.db"
-    for vcf in vcfs:
-        start = timer()
-        load_vcf.load_vcf(vcf, db_location)
-        end = timer()
-        _logger.info("Processed `%s` in %s seconds", vcf, end - start)
+    start = timer()
+    load_vcf.load_vcf(vcf, db_location, uri)
+    end = timer()
+    _logger.info("Processed `%s` in %s seconds", vcf, end - start)
 
 
 @cli.command()
