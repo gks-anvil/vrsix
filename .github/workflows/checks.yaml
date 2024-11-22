@@ -36,6 +36,9 @@ jobs:
         run: python3 -m ruff check . && ruff format --check .
   rust-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./rust
     strategy:
       matrix:
         toolchain:
