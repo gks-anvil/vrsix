@@ -8,12 +8,6 @@ From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. suff
 % vrsix load chr1.vcf
 ```
 
-By default, this uses the input file's location in the local file system as a URI, but a custom URI can be declared:
-
-```shell
-% vrsix load chr1.vcf gs://my_stuff/chr1.vcf
-```
-
 Given a VRS ID, retrieve VCF-associated data (output format TBD)
 
 ```shell
@@ -68,14 +62,7 @@ cd rust/
 cargo fmt
 ```
 
-Run tests from the project root with `pytest`:
+Run tests with `pytest`:
 ```shell
 pytest
-```
-
-Some granular tests are written directly into the Rust backend as well:
-
-```shell
-cd rust/
-cargo test
 ```
