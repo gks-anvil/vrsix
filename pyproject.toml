@@ -21,7 +21,7 @@ classifiers = [
 requires-python = ">=3.10"
 description = "Tools for indexing GREGoR VCFs"
 license = {file = "LICENSE"}
-dependencies = ["click", "asyncclick", "wags-tails"]
+dependencies = ["click", "asyncclick"]
 
 [project.optional-dependencies]
 tests = [
