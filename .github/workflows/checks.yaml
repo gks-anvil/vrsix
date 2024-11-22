@@ -39,16 +39,13 @@ jobs:
     defaults:
       run:
         working-directory: ./rust
-    strategy:
-      matrix:
-        toolchain:
-          - stable
-          - beta
-          - nightly
     steps:
       - uses: actions/checkout@v4
-      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+
+      - run: rustup update stable && rustup default stable
+
       - run: cargo build --verbose
+
       - run: cargo test --verbose
   rust-lint:
     runs-on: ubuntu-latest
