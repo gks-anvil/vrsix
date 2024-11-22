@@ -20,11 +20,11 @@ use tokio::{
 async fn load_allele(db_row: DbRow, pool: &SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
     let mut conn = pool.acquire().await?;
     let result =
-        sqlx::query("INSERT INTO vrs_locations (vrs_id, chr, pos, uri) VALUES (?, ?, ?, ?)")
+        sqlx::query("INSERT INTO vrs_locations (vrs_id, chr, pos, uri_id) VALUES (?, ?, ?, ?);")
             .bind(db_row.vrs_id)
             .bind(db_row.chr)
             .bind(db_row.pos)
-            .bind(db_row.uri)
+            .bind(db_row.uri_id)
             .execute(&mut *conn)
             .await;
     if let Err(err) = result {
@@ -95,6 +95,24 @@ async fn get_reader(
     }
 }
 
+async fn load_file_uri(uri: &str, pool: &SqlitePool) -> Result<i64, Box<dyn std::error::Error>> {
+    let mut conn = pool.acquire().await?;
+
+    let insert_result = sqlx::query("INSERT OR IGNORE INTO file_uris (uri) VALUES (?);")
+        .bind(uri)
+        .execute(&mut *conn)
+        .await?;
+    if insert_result.rows_affected() > 0 {
+        Ok(insert_result.last_insert_rowid())
+    } else {
+        let row_id: (i64,) = sqlx::query_as("SELECT id FROM file_uris WHERE uri = ?;")
+            .bind(uri)
+            .fetch_one(&mut *conn)
+            .await?;
+        Ok(row_id.0)
+    }
+}
+
 pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<()> {
     let start = Instant::now();
 
@@ -120,6 +138,10 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<
         VrsixDbError::new_err(format!("Failed database connection/call: {}", e))
     })?;
 
+    let uri_id = load_file_uri(&uri, &db_pool)
+        .await
+        .map_err(|e| VrsixDbError::new_err(format!("Failed to insert file URI `{uri}`: {e}")))?;
+
     while let Some(record) = records.try_next().await? {
         let vrs_ids = get_vrs_ids(record.info(), &header)?;
         let chrom = record.reference_sequence_name();
@@ -133,7 +155,7 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<
                     .to_string(),
                 chr: chrom.strip_prefix("chr").unwrap_or(chrom).to_string(),
                 pos: pos.try_into().unwrap(),
-                uri: uri.clone(),
+                uri_id,
             };
             load_allele(row, &db_pool).await.map_err(|e| {
                 error!("Failed to load row {:?}", e);
@@ -145,4 +167,20 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<
     let duration = start.elapsed();
     info!("Time taken: {:?}", duration);
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::NamedTempFile;
+
+    #[tokio::test]
+    async fn test_load_file_uri() {
+        let temp_file = NamedTempFile::new().expect("Failed to create temp file");
+        let db_url = format!("sqlite://{}", temp_file.path().to_str().unwrap());
+        crate::sqlite::setup_db(&db_url).await.unwrap();
+        let db_pool = get_db_connection(&db_url).await.unwrap();
+        let uri_id = load_file_uri("file:///sdlfkjd", &db_pool).await.unwrap();
+        assert!(uri_id == 1);
+    }
 }
