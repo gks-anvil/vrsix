@@ -51,6 +51,11 @@ def cli() -> None:
 def load(vcf: Path, uri: str, db_location: Path | None) -> None:
     """Index the VRS annotations in a VCF by loading it into the sqlite DB.
 
+    Optionally provide a custom file URI to describe how to retrieve VCF records after
+    index lookup:
+
+        % vrsix load input.vcf gs://my_storage/input.vcf
+
     \f
     :param vcf_path: path to VCF to ingest
     """
