@@ -1,4 +1,4 @@
-"""Provide CLI utility for interfacing with data load and fetch operations."""
+"""Provide CLI utility for interfacing with data loading."""
 
 import logging
 from pathlib import Path

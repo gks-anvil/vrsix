@@ -8,23 +8,6 @@ From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. suff
 % vrsix load chr1.vcf
 ```
 
-Given a VRS ID, retrieve VCF-associated data (output format TBD)
-
-```shell
-% vrsix fetch-by-id --db-location=sqlite.db dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG
-ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,1,783006
-```
-
-Or fetch all rows within a coordinate range:
-
-```shell
-% vrsix fetch-by-range --db-location=sqlite.db 1 783000 783200
-ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,1,783006
-ga4gh:VA.MiasxyXMXtOpsZgGelL3c4QgtflCNLHD,1,783006
-ga4gh:VA.5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p,1,783175
-ga4gh:VA.jHaXepIvlbnapfPtH_62y-Qm81hCrBYn,1,783175
-```
-
 ## Set up for development
 
 Ensure that a recent version of the [Rust toolchain](https://www.rust-lang.org/tools/install) is available.
