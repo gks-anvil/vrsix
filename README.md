@@ -1,20 +1,10 @@
 # vrsix: Indexing VRS-Annotated VCFs
 
-[![image](https://img.shields.io/pypi/v/vrsix.svg)](https://pypi.python.org/pypi/vrsix) [![image](https://img.shields.io/pypi/l/vrsix.svg)](https://pypi.python.org/pypi/vrsix) [![image](https://img.shields.io/pypi/pyversions/vrsix.svg)](https://pypi.python.org/pypi/vrsix) [![Actions status](https://github.com/gks-anvil/vrsix/actions/workflows/checks.yaml/badge.svg)](https://github.com/gks-anvil/vrsix/actions/checks.yaml)
-
 ## Overview
 
 `vrsix` provides a file-based indexing strategy to support fast lookup of AnVIL-hosted VCFs using IDs and annotations drawn from the [GA4GH Variation Representation Specification](https://www.ga4gh.org/product/variation-representation/).
 
 See the [vrsix Terra workflow](https://github.com/gks-anvil/vrsix-workflow) for a readymade Terra implementation.
-
-## Installation
-
-Install from [PyPI](https://pypi.org/project/vrsix/):
-
-```shell
-python3 -m pip install vrsix
-```
 
 ## Usage
 
@@ -24,7 +14,7 @@ From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. suff
 % vrsix load chr1.vcf
 ```
 
-All instances of variations are stored with an associated file URI to support later retrieval. By default, the input file's location in the local file system is given, but a custom URI can be provided as an optional argument:
+All instances of variations are stored with an associated file URI to support later retrieval. By default, this URI is simply the input VCF's location in the file system, but you may declare a custom URI instead as an optional argument:
 
 ```shell
 % vrsix load chr1.vcf gs://my_stuff/chr1.vcf
