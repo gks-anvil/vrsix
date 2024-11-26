@@ -41,7 +41,8 @@ def test_load(fixture_dir: Path, temp_dir: Path, input_filename: str):
 def test_load_specify_uri(fixture_dir: Path, temp_dir: Path):
     input_file = fixture_dir / "input.vcf"
     temp_db = temp_dir / "tmp.db"
-    load.load_vcf(input_file, temp_db)
+    input_uri = "gs://my/input/file.vcf"
+    load.load_vcf(input_file, temp_db, input_uri)
 
     conn = sqlite3.connect(temp_db)
     results = conn.execute("SELECT * FROM vrs_locations").fetchall()
@@ -58,6 +59,11 @@ def test_load_specify_uri(fixture_dir: Path, temp_dir: Path):
         (9, "DVMcfA37Llc9QUOA0XfLJbJ-agKyGpGo", "1", 797392, 1),
         (10, "OTiBHLE2WW93M4-4zGVrWSqP2GBj8-qM", "1", 797392, 1),
     ]
+
+    results = conn.execute("SELECT * FROM file_uris").fetchall()
+    assert len(results) == 1
+    assert results == [(1, input_uri)]
+
     conn.close()
 
 

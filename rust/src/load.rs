@@ -180,7 +180,9 @@ mod tests {
         let db_url = format!("sqlite://{}", temp_file.path().to_str().unwrap());
         crate::sqlite::setup_db(&db_url).await.unwrap();
         let db_pool = get_db_connection(&db_url).await.unwrap();
-        let uri_id = load_file_uri("file:///sdlfkjd", &db_pool).await.unwrap();
+        let uri_id = load_file_uri("file:///arbitrary/file/location.vcf", &db_pool)
+            .await
+            .unwrap();
         assert!(uri_id == 1);
     }
 }
