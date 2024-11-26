@@ -20,7 +20,7 @@ All instances of variations are stored with an associated file URI to support la
 % vrsix load chr1.vcf gs://my_stuff/chr1.vcf
 ```
 
-By default, all records are ingested into a sqlite file located at `~/.local/share/vrsix.db`. This can be overridden with either the environment variable `VRS_VCF_INDEX`, or with an optional flag:
+By default, all records are ingested into a sqlite file located at `~/.local/share/vrsix.db`. This can be overridden with either the environment variable `VRS_VCF_INDEX`, or with an optional flag to the CLI:
 
 ```shell
 vrsix load --db-location=./vrsix.db input.vcf
