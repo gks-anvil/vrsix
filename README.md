@@ -1,6 +1,22 @@
 # vrsix: Indexing VRS-Annotated VCFs
 
-Proof of concept for sqlite-based indexing of ANViL-hosted VCFs annotated with VRS IDs and attributes.
+[![image](https://img.shields.io/pypi/v/vrsix.svg)](https://pypi.python.org/pypi/vrsix) [![image](https://img.shields.io/pypi/l/vrsix.svg)](https://pypi.python.org/pypi/vrsix) [![image](https://img.shields.io/pypi/pyversions/vrsix.svg)](https://pypi.python.org/pypi/vrsix) [![Actions status](https://github.com/gks-anvil/vrsix/actions/workflows/checks.yaml/badge.svg)](https://github.com/gks-anvil/vrsix/actions/checks.yaml)
+
+## Overview
+
+`vrsix` provides a file-based indexing strategy to support fast lookup of AnVIL-hosted VCFs using IDs and annotations drawn from the [GA4GH Variation Representation Specification](https://www.ga4gh.org/product/variation-representation/).
+
+See the [vrsix Terra workflow](https://github.com/gks-anvil/vrsix-workflow) for a readymade Terra implementation.
+
+## Installation
+
+Install from [PyPI](https://pypi.org/project/vrsix/):
+
+```shell
+python3 -m pip install vrsix
+```
+
+## Usage
 
 From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. sufficient inputs for a tabix lookup), and store them in a sqlite database.
 
@@ -8,30 +24,19 @@ From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. suff
 % vrsix load chr1.vcf
 ```
 
-By default, this uses the input file's location in the local file system as a URI, but a custom URI can be declared:
+All instances of variations are stored with an associated file URI to support later retrieval. By default, the input file's location in the local file system is given, but a custom URI can be provided as an optional argument:
 
 ```shell
 % vrsix load chr1.vcf gs://my_stuff/chr1.vcf
 ```
 
-Given a VRS ID, retrieve VCF-associated data (output format TBD)
+By default, all records are ingested into a sqlite file located at `~/.local/share/vrsix.db`. This can be overridden with either the environment variable `VRS_VCF_INDEX`, or with an optional flag:
 
 ```shell
-% vrsix fetch-by-id --db-location=sqlite.db dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG
-ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,1,783006
+vrsix load --db-location=./vrsix.db input.vcf
 ```
 
-Or fetch all rows within a coordinate range:
-
-```shell
-% vrsix fetch-by-range --db-location=sqlite.db 1 783000 783200
-ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,1,783006
-ga4gh:VA.MiasxyXMXtOpsZgGelL3c4QgtflCNLHD,1,783006
-ga4gh:VA.5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p,1,783175
-ga4gh:VA.jHaXepIvlbnapfPtH_62y-Qm81hCrBYn,1,783175
-```
-
-## Set up for development
+## Development
 
 Ensure that a recent version of the [Rust toolchain](https://www.rust-lang.org/tools/install) is available.
 
