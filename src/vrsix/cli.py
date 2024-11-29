@@ -1,4 +1,4 @@
-"""Provide CLI utility for interfacing with data load and fetch operations."""
+"""Provide CLI utility for interfacing with data loading operations."""
 
 import logging
 from pathlib import Path
@@ -28,11 +28,16 @@ def cli() -> None:
 
 @cli.command()
 @click.argument(
-    "vcfs",
+    "vcf",
     type=click.Path(
         exists=True, file_okay=True, dir_okay=False, readable=True, path_type=Path
     ),
-    nargs=-1,
+    nargs=1,
+)
+@click.argument(
+    "uri",
+    default=None,
+    required=False,
 )
 @click.option(
     "--db-location",
@@ -40,16 +45,20 @@ def cli() -> None:
         file_okay=True, dir_okay=True, readable=True, writable=True, path_type=Path
     ),
 )
-def load(vcfs: tuple[Path], db_location: Path | None) -> None:
+def load(vcf: Path, uri: str, db_location: Path | None) -> None:
     """Index the VRS annotations in a VCF by loading it into the sqlite DB.
+
+    Optionally provide a custom file URI to describe how to retrieve VCF records after
+    index lookup:
+
+        % vrsix load input.vcf gs://my_storage/input.vcf
 
     \f
     :param vcf_path: path to VCF to ingest
     """
     if db_location and db_location.is_dir():
         db_location = db_location / "vrs_vcf_index.db"
-    for vcf in vcfs:
-        start = timer()
-        load_vcf.load_vcf(vcf, db_location)
-        end = timer()
-        _logger.info("Processed `%s` in %s seconds", vcf, end - start)
+    start = timer()
+    load_vcf.load_vcf(vcf, db_location, uri)
+    end = timer()
+    _logger.info("Processed `%s` in %s seconds", vcf, end - start)

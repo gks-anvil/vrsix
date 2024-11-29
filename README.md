@@ -1,38 +1,39 @@
 # vrsix: Indexing VRS-Annotated VCFs
 
-Proof of concept for sqlite-based indexing of ANViL-hosted VCFs annotated with VRS IDs and attributes.
+## Overview
+
+`vrsix` provides a file-based indexing strategy to support fast lookup of AnVIL-hosted VCFs using IDs and annotations drawn from the [GA4GH Variation Representation Specification](https://www.ga4gh.org/product/variation-representation/).
+
+See the [vrsix Terra workflow](https://github.com/gks-anvil/vrsix-workflow) for a readymade Terra implementation.
+
+## Usage
 
 From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. sufficient inputs for a tabix lookup), and store them in a sqlite database.
 
 ```shell
-% vrsix load chr1.vcf
+vrsix load chr1.vcf
 ```
 
-Given a VRS ID, retrieve VCF-associated data (output format TBD)
+All instances of variations are stored with an associated file URI to support later retrieval. By default, this URI is simply the input VCF's location in the file system, but you may declare a custom URI instead as an optional argument:
 
 ```shell
-% vrsix fetch-by-id --db-location=sqlite.db dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG
-ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,1,783006
+vrsix load chr1.vcf gs://my_stuff/chr1.vcf
 ```
 
-Or fetch all rows within a coordinate range:
+By default, all records are ingested into a sqlite file located at `~/.local/share/vrsix.db`. This can be overridden with either the environment variable `VRS_VCF_INDEX`, or with an optional flag to the CLI:
 
 ```shell
-% vrsix fetch-by-range --db-location=sqlite.db 1 783000 783200
-ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,1,783006
-ga4gh:VA.MiasxyXMXtOpsZgGelL3c4QgtflCNLHD,1,783006
-ga4gh:VA.5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p,1,783175
-ga4gh:VA.jHaXepIvlbnapfPtH_62y-Qm81hCrBYn,1,783175
+vrsix load --db-location=./vrsix.db input.vcf
 ```
 
-## Set up for development
+## Development
 
 Ensure that a recent version of the [Rust toolchain](https://www.rust-lang.org/tools/install) is available.
 
 Create a virtual environment and install developer dependencies:
 
 ```shell
-python3 -m virtualenv venv
+python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -e '.[dev,tests]'
 ```
@@ -62,7 +63,14 @@ cd rust/
 cargo fmt
 ```
 
-Run tests with `pytest`:
+Run tests from the project root with `pytest`:
 ```shell
 pytest
+```
+
+Some granular tests are written directly into the Rust backend as well:
+
+```shell
+cd rust/
+cargo test
 ```
