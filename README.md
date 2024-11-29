@@ -33,7 +33,7 @@ Ensure that a recent version of the [Rust toolchain](https://www.rust-lang.org/t
 Create a virtual environment and install developer dependencies:
 
 ```shell
-python3 -m virtualenv venv
+python3 -m venv venv
 source venv/bin/activate
 python3 -m pip install -e '.[dev,tests]'
 ```
