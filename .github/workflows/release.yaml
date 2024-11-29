@@ -55,6 +55,7 @@ jobs:
           name: wheels-linux-${{ matrix.platform.target }}
           path: dist
 
+  ## comment out for now. Some dependency is unable to build
   # musllinux:
   #   runs-on: ${{ matrix.platform.runner }}
   #   strategy:
@@ -93,38 +94,40 @@ jobs:
   #         name: wheels-musllinux-${{ matrix.platform.target }}
   #         path: dist
 
-  windows:
-    runs-on: ${{ matrix.platform.runner }}
-    strategy:
-      matrix:
-        platform:
-          - runner: windows-latest
-            target: x64
-          - runner: windows-latest
-            target: x86
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.x
-          architecture: ${{ matrix.platform.target }}
-      - name: Build wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.platform.target }}
-          args: --release --out dist --manifest-path rust/Cargo.toml
-          sccache: 'true'
-      - name: Build free-threaded wheels
-        uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.platform.target }}
-          args: --release --out dist --manifest-path rust/Cargo.toml -i python3.13t
-          sccache: 'true'
-      - name: Upload wheels
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheels-windows-${{ matrix.platform.target }}
-          path: dist
+  ## Comment out for now. Issue with a python3.13t interpreter?
+  ## https://github.com/gks-anvil/vrsix/actions/runs/12090090720/job/33716511078
+  # windows:
+  #   runs-on: ${{ matrix.platform.runner }}
+  #   strategy:
+  #     matrix:
+  #       platform:
+  #         - runner: windows-latest
+  #           target: x64
+  #         - runner: windows-latest
+  #           target: x86
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-python@v5
+  #       with:
+  #         python-version: 3.x
+  #         architecture: ${{ matrix.platform.target }}
+  #     - name: Build wheels
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         target: ${{ matrix.platform.target }}
+  #         args: --release --out dist --manifest-path rust/Cargo.toml
+  #         sccache: 'true'
+  #     - name: Build free-threaded wheels
+  #       uses: PyO3/maturin-action@v1
+  #       with:
+  #         target: ${{ matrix.platform.target }}
+  #         args: --release --out dist --manifest-path rust/Cargo.toml -i python3.13t
+  #         sccache: 'true'
+  #     - name: Upload wheels
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: wheels-windows-${{ matrix.platform.target }}
+  #         path: dist
 
   macos:
     runs-on: ${{ matrix.platform.runner }}
@@ -180,7 +183,7 @@ jobs:
     needs: [
       linux,
       # musllinux,
-      windows,
+      # windows,
       macos,
       sdist
     ]
