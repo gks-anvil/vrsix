@@ -153,7 +153,7 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<
                     .strip_prefix("ga4gh:VA.")
                     .unwrap_or(&vrs_id)
                     .to_string(),
-                chr: chrom.strip_prefix("chr").unwrap_or(chrom).to_string(),
+                chr: chrom.to_string(),
                 pos: pos.try_into().unwrap(),
                 uri_id,
             };
