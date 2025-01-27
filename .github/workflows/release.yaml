@@ -184,7 +184,7 @@ jobs:
     needs: [
       linux,
       musllinux,
-      windows,
+      # windows,
       macos,
       sdist
     ]
