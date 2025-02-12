@@ -8,7 +8,7 @@ import pytest
 from vrsix import load
 
 
-@pytest.fixture()
+@pytest.fixture
 def temp_dir() -> Generator:
     with tempfile.TemporaryDirectory() as temp_dir:
         yield Path(temp_dir)

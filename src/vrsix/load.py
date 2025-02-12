@@ -14,13 +14,13 @@ from vrsix._core import (
 from vrsix.sqlite import DEFAULT_SQLITE_LOCATION
 
 __all__ = [
-    "load_vcf",
-    "vcf_to_sqlite",
     "FiletypeError",
     "SqliteFileError",
-    "VrsixError",
     "VcfError",
     "VrsixDbError",
+    "VrsixError",
+    "load_vcf",
+    "vcf_to_sqlite",
 ]
 
 _logger = logging.getLogger(__name__)
