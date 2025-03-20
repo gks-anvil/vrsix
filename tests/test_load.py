@@ -14,8 +14,33 @@ def temp_dir() -> Generator:
         yield Path(temp_dir)
 
 
+@pytest.fixture
+def expected_results() -> list[tuple[int, str, str, int, int, int, str, int]]:
+    return [
+        (1, "dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG", "chr1", 783006, 783005, 783006, "A", 1),
+        (2, "MiasxyXMXtOpsZgGelL3c4QgtflCNLHD", "chr1", 783006, 783005, 783006, "G", 1),
+        (3, "5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p", "chr1", 783175, 783174, 783175, "T", 1),
+        (4, "jHaXepIvlbnapfPtH_62y-Qm81hCrBYn", "chr1", 783175, 783174, 783175, "C", 1),
+        (5, "-NGsjBEx0UbPF3uYjStZ_2r-m2LbUtUB", "chr1", 784860, 784859, 784860, "T", 1),
+        (6, "HLinVo6Q-i-PryQOiq8QAtOeC9oQ9Q3p", "chr1", 784860, 784859, 784860, "C", 1),
+        (7, "qdyeeiC3cLfXeT23zxT9-qlJNN64MKVB", "chr1", 785417, 785416, 785417, "G", 1),
+        (8, "cNWXR3OLq9D3L19vQFvbHw-aH0vlA5cN", "chr1", 785417, 785416, 785417, "A", 1),
+        (9, "DVMcfA37Llc9QUOA0XfLJbJ-agKyGpGo", "chr1", 797392, 797391, 797392, "G", 1),
+        (
+            10,
+            "OTiBHLE2WW93M4-4zGVrWSqP2GBj8-qM",
+            "chr1",
+            797392,
+            797391,
+            797392,
+            "A",
+            1,
+        ),
+    ]
+
+
 @pytest.mark.parametrize("input_filename", ["input.vcf", "input.vcf.gz"])
-def test_load(fixture_dir: Path, temp_dir: Path, input_filename: str):
+def test_load(fixture_dir: Path, temp_dir: Path, input_filename: str, expected_results):
     input_file = fixture_dir / input_filename
     temp_db = temp_dir / "tmp.db"
     load.load_vcf(input_file, temp_db)
@@ -23,22 +48,11 @@ def test_load(fixture_dir: Path, temp_dir: Path, input_filename: str):
     conn = sqlite3.connect(temp_db)
     results = conn.execute("SELECT * FROM vrs_locations").fetchall()
     assert len(results) == 10
-    assert results == [
-        (1, "dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG", "chr1", 783006, 1),
-        (2, "MiasxyXMXtOpsZgGelL3c4QgtflCNLHD", "chr1", 783006, 1),
-        (3, "5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p", "chr1", 783175, 1),
-        (4, "jHaXepIvlbnapfPtH_62y-Qm81hCrBYn", "chr1", 783175, 1),
-        (5, "-NGsjBEx0UbPF3uYjStZ_2r-m2LbUtUB", "chr1", 784860, 1),
-        (6, "HLinVo6Q-i-PryQOiq8QAtOeC9oQ9Q3p", "chr1", 784860, 1),
-        (7, "qdyeeiC3cLfXeT23zxT9-qlJNN64MKVB", "chr1", 785417, 1),
-        (8, "cNWXR3OLq9D3L19vQFvbHw-aH0vlA5cN", "chr1", 785417, 1),
-        (9, "DVMcfA37Llc9QUOA0XfLJbJ-agKyGpGo", "chr1", 797392, 1),
-        (10, "OTiBHLE2WW93M4-4zGVrWSqP2GBj8-qM", "chr1", 797392, 1),
-    ]
+    assert results == expected_results
     conn.close()
 
 
-def test_load_specify_uri(fixture_dir: Path, temp_dir: Path):
+def test_load_specify_uri(fixture_dir: Path, temp_dir: Path, expected_results):
     input_file = fixture_dir / "input.vcf"
     temp_db = temp_dir / "tmp.db"
     input_uri = "gs://my/input/file.vcf"
@@ -47,18 +61,7 @@ def test_load_specify_uri(fixture_dir: Path, temp_dir: Path):
     conn = sqlite3.connect(temp_db)
     results = conn.execute("SELECT * FROM vrs_locations").fetchall()
     assert len(results) == 10
-    assert results == [
-        (1, "dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG", "chr1", 783006, 1),
-        (2, "MiasxyXMXtOpsZgGelL3c4QgtflCNLHD", "chr1", 783006, 1),
-        (3, "5cY2k53xdW7WeHw2WG1HA7jl50iH-r9p", "chr1", 783175, 1),
-        (4, "jHaXepIvlbnapfPtH_62y-Qm81hCrBYn", "chr1", 783175, 1),
-        (5, "-NGsjBEx0UbPF3uYjStZ_2r-m2LbUtUB", "chr1", 784860, 1),
-        (6, "HLinVo6Q-i-PryQOiq8QAtOeC9oQ9Q3p", "chr1", 784860, 1),
-        (7, "qdyeeiC3cLfXeT23zxT9-qlJNN64MKVB", "chr1", 785417, 1),
-        (8, "cNWXR3OLq9D3L19vQFvbHw-aH0vlA5cN", "chr1", 785417, 1),
-        (9, "DVMcfA37Llc9QUOA0XfLJbJ-agKyGpGo", "chr1", 797392, 1),
-        (10, "OTiBHLE2WW93M4-4zGVrWSqP2GBj8-qM", "chr1", 797392, 1),
-    ]
+    assert results == expected_results
 
     results = conn.execute("SELECT * FROM file_uris").fetchall()
     assert len(results) == 1
