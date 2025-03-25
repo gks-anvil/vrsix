@@ -1,4 +1,4 @@
-use crate::parse::{cast_string_array_to_int, get_info_field, VrsVcfField};
+use crate::parse::{get_int_info_field, get_str_info_field, VrsVcfField};
 use crate::sqlite::{get_db_connection, setup_db, DbRow};
 use crate::{FiletypeError, SqliteFileError, VrsixDbError};
 use futures::TryStreamExt;
@@ -123,18 +123,10 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<
         .map_err(|e| VrsixDbError::new_err(format!("Failed to insert file URI `{uri}`: {e}")))?;
 
     while let Some(record) = records.try_next().await? {
-        let vrs_ids = get_info_field(record.info(), &header, VrsVcfField::VrsAlleleIds)?;
-        let vrs_starts = cast_string_array_to_int(get_info_field(
-            record.info(),
-            &header,
-            VrsVcfField::VrsStarts,
-        )?)?;
-        let vrs_ends = cast_string_array_to_int(get_info_field(
-            record.info(),
-            &header,
-            VrsVcfField::VrsEnds,
-        )?)?;
-        let vrs_states = get_info_field(record.info(), &header, VrsVcfField::VrsStates)?;
+        let vrs_ids = get_str_info_field(record.info(), &header, VrsVcfField::VrsAlleleIds)?;
+        let vrs_starts = get_int_info_field(record.info(), &header, VrsVcfField::VrsStarts)?;
+        let vrs_ends = get_int_info_field(record.info(), &header, VrsVcfField::VrsEnds)?;
+        let vrs_states = get_str_info_field(record.info(), &header, VrsVcfField::VrsStates)?;
         let chrom = record.reference_sequence_name();
         let pos = record.variant_start().unwrap()?.get();
 
