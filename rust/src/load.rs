@@ -125,7 +125,10 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<
 
     setup_db(db_url).await.map_err(|_| {
         error!("Unable to open input file `{:?}` into sqlite", db_url);
-        SqliteFileError::new_err("Unable to open DB file -- is it a valid sqlite file?")
+        SqliteFileError::new_err(format!(
+            "Unable to open DB file at path {:?} -- is it a valid sqlite file and location?",
+            vcf_path
+        ))
     })?;
 
     let mut reader = get_reader(vcf_path).await?;

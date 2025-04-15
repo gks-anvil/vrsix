@@ -8,18 +8,18 @@ pub async fn get_db_connection(db_url: &str) -> Result<SqlitePool, Error> {
     Ok(db_pool)
 }
 
-pub async fn setup_db(db_url: &str) -> Result<(), Error> {
-    if !Sqlite::database_exists(db_url).await.unwrap_or(false) {
-        info!("Creating DB {}", db_url);
-        match Sqlite::create_database(db_url).await {
-            Ok(_) => info!("Created DB"),
+pub async fn setup_db(db_uri: &str) -> Result<(), Error> {
+    if !Sqlite::database_exists(db_uri).await.unwrap_or(false) {
+        info!("Creating DB at {}", db_uri);
+        match Sqlite::create_database(db_uri).await {
+            Ok(_) => info!("Created DB at {}", db_uri),
             Err(error) => return Err(error),
         }
     } else {
-        info!("DB exists")
+        info!("DB at {} already exists", db_uri)
     }
 
-    let db = get_db_connection(db_url).await?;
+    let db = get_db_connection(db_uri).await?;
     let result = sqlx::query(
         "
         CREATE TABLE IF NOT EXISTS file_uris (
@@ -90,6 +90,7 @@ pub struct DbRow {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::fs;
     use tempfile::{tempdir, NamedTempFile};
 
     #[tokio::test]
@@ -97,6 +98,42 @@ mod tests {
         let temp_file = NamedTempFile::new().expect("Failed to create temp file");
         let db_url = format!("sqlite://{}", temp_file.path().to_str().unwrap());
         setup_db(&db_url).await.expect("Setup DB failed");
+    }
+
+    #[tokio::test]
+    async fn test_setup_db_with_invalid_path() {
+        let db_url = "sqlite:///this/path/should/not/exist/db.sqlite";
+        let result = setup_db(db_url).await;
+        //assert!(result.is_err(), "Expected an error for an invalid/unwritable path");
+
+        match result {
+            Err(Error::Database(e)) => {
+                if e.code().unwrap() != "14" {
+                    panic!("Unexpected error or result: {:?}", e)
+                }
+            }
+            e => panic!("Unexpected error or result: {:?}", e),
+        }
+    }
+
+    #[tokio::test]
+    async fn test_setup_db_with_unwritable_dir() {
+        let temp_dir = tempdir().expect("Failed to create temporary directory");
+
+        let metadata = fs::metadata(temp_dir.path()).unwrap();
+        let mut permissions = metadata.permissions();
+        permissions.set_readonly(true);
+        fs::set_permissions(temp_dir.path(), permissions)
+            .expect("Failed to set directory to read-only");
+
+        let db_file_path = temp_dir.path().join("db.sqlite");
+        let db_url = format!("sqlite://{}", db_file_path.to_str().unwrap());
+
+        let result = setup_db(&db_url).await;
+        assert!(
+            result.is_err(),
+            "Expected an error for unwritable directory"
+        );
     }
 
     #[test]

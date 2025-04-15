@@ -17,6 +17,7 @@ pub fn vcf_to_sqlite(vcf_path: PathBuf, db_url: String, vcf_uri: Option<String>)
 
 create_exception!(loading_module, VrsixError, exceptions::PyException);
 create_exception!(loading_module, SqliteFileError, VrsixError);
+create_exception!(loading_module, SqliteConnectionError, VrsixError);
 create_exception!(loading_module, VcfError, VrsixError);
 create_exception!(loading_module, VrsixDbError, VrsixError);
 create_exception!(loading_module, FiletypeError, VrsixError);
