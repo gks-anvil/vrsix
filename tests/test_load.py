@@ -112,3 +112,15 @@ def test_load_redundant_rows(fixture_dir: Path, temp_dir: Path):
     conn = sqlite3.connect(temp_db)
     results = conn.execute("SELECT * FROM vrs_locations").fetchall()
     assert len(results) == 10
+
+
+def test_int_position(fixture_dir: Path, temp_dir: Path):
+    """With VRS-Python 2.x, vrs start/end are now Integer. The ingester routine should
+    be resilient to this change.
+    """
+    input_vcf = fixture_dir / "input_positions_ints.vcf"
+    temp_db = temp_dir / "tmp.db"
+    load.load_vcf(input_vcf, temp_db)
+    conn = sqlite3.connect(temp_db)
+    results = conn.execute("SELECT * FROM vrs_locations").fetchall()
+    assert len(results) == 10
