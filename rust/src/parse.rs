@@ -141,38 +141,3 @@ pub fn get_int_info_field(
         Err(VcfError::new_err("Expected Array variant"))
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use noodles_vcf::{
-        self as vcf,
-        header::record::value::{map::Info, Map},
-        header::FileFormat,
-    };
-
-    #[test]
-    fn test_get_info_field() {
-        pub const IDS_KEY: &str = "VRS_Allele_IDs";
-        let ids_id = IDS_KEY;
-        let ids_info = Map::<Info>::from(ids_id);
-        pub const STARTS_KEY: &str = "VRS_Starts";
-        let starts_id = STARTS_KEY;
-        let starts_info = Map::<Info>::from(starts_id);
-        pub const ENDS_KEY: &str = "VRS_Ends";
-        let ends_id = ENDS_KEY;
-        let ends_info = Map::<Info>::from(ends_id);
-        pub const STATES_KEY: &str = "VRS_States";
-        let states_id = STATES_KEY;
-        let states_info = Map::<Info>::from(states_id);
-
-        let header = vcf::Header::builder()
-            .set_file_format(FileFormat::default())
-            .add_info(ids_id, ids_info.clone())
-            .add_info(starts_id, starts_info.clone())
-            .add_info(ends_id, ends_info.clone())
-            .add_info(states_id, states_info.clone())
-            .build();
-        let _infos = header.infos();
-        // TODO finish this
-    }
-}
