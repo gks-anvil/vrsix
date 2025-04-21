@@ -65,7 +65,7 @@ def test_load_specify_uri(fixture_dir: Path, temp_dir: Path, expected_results):
 
     results = conn.execute("SELECT * FROM file_uris").fetchall()
     assert len(results) == 1
-    assert results == [(1, input_uri)]
+    assert results == [(1, input_uri, None, None)]
 
     conn.close()
 

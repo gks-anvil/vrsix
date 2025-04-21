@@ -1,13 +1,16 @@
 use crate::parse::{get_int_info_field, get_str_info_field, VrsVcfField};
 use crate::sqlite::{get_db_connection, setup_db, DbRow};
-use crate::{FiletypeError, SqliteFileError, VrsixDbError};
+use crate::{FiletypeError, SqliteFileError, VcfError, VrsixDbError, VRSIX_SCHEMA_VERSION};
 use futures::TryStreamExt;
 use itertools::izip;
 use log::{error, info};
 use noodles_bgzf::r#async::Reader as BgzfReader;
 use noodles_vcf::r#async::io::Reader as VcfReader;
 use pyo3::{exceptions, prelude::*};
-use sqlx::{error::DatabaseError, sqlite::SqliteError, SqlitePool};
+use sqlx::{
+    error::DatabaseError, error::Error as SqlxError, sqlite::SqliteError, sqlite::SqliteRow, Row,
+    SqlitePool,
+};
 use std::path::PathBuf;
 use std::time::Instant;
 use tokio::{
@@ -93,6 +96,38 @@ async fn load_file_uri(uri: &str, pool: &SqlitePool) -> Result<i64, Box<dyn std:
     }
 }
 
+#[derive(Debug)]
+struct SchemaResult {
+    pub vrsix_schema_version: String,
+}
+
+impl From<SqliteRow> for SchemaResult {
+    fn from(row: SqliteRow) -> Self {
+        let version: String = row.get("vrsix_schema_version");
+        SchemaResult {
+            vrsix_schema_version: version,
+        }
+    }
+}
+
+/// Check whether VRSIX schema in provided file matches the vrsix library schema value
+///
+/// The library hard-codes a schema version value. This is currently pretty naive, just a
+/// simple string value. If the value differs from what's in the vrsix DB, this function
+/// emits a warning and returns false.
+async fn schema_matches_library(pool: &SqlitePool, file_uri: &str) -> Result<bool, SqlxError> {
+    let result: SchemaResult = sqlx::query("SELECT vrsix_schema_version FROM vrsix_schema;")
+        .fetch_one(pool)
+        .await?
+        .into();
+    if result.vrsix_schema_version != VRSIX_SCHEMA_VERSION {
+        error!("vrsix schema in {} is {}; differs from vrsix library schema {}. Import may be unsuccessful, migration is recommended.", file_uri, result.vrsix_schema_version, VRSIX_SCHEMA_VERSION);
+        Ok(false)
+    } else {
+        Ok(true)
+    }
+}
+
 pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<()> {
     let start = Instant::now();
 
@@ -117,6 +152,10 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<
         error!("DB connection failed: {}", e);
         VrsixDbError::new_err(format!("Failed database connection/call: {}", e))
     })?;
+
+    if !schema_matches_library(&db_pool, &db_url).await.map_err(|_| SqliteFileError::new_err(format!("Unable to get VRSIX schema version from {} -- this might indicate a schema mismatch", &db_url)))? {
+        return Err(SqliteFileError::new_err(format!("Found schema mismatch between VRSIX library and {}", &db_url)))
+    };
 
     let uri_id = load_file_uri(&uri, &db_pool)
         .await

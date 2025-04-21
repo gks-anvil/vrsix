@@ -16,6 +16,8 @@ pub fn vcf_to_sqlite(vcf_path: PathBuf, db_url: String, vcf_uri: Option<String>)
     Ok(())
 }
 
+const VRSIX_SCHEMA_VERSION: &str = "1";
+
 create_exception!(loading_module, VrsixError, exceptions::PyException);
 create_exception!(loading_module, SqliteFileError, VrsixError);
 create_exception!(loading_module, VcfError, VrsixError);
