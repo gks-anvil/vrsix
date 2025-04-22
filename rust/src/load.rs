@@ -189,8 +189,6 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<
     if !schema_matches_library(&db_pool, &db_url).await.map_err(|_| SqliteFileError::new_err(format!("Unable to get VRSIX schema version from {} -- this might indicate a schema mismatch", &db_url)))? {
         return Err(SqliteFileError::new_err(format!("Found schema mismatch between VRSIX library and {}", &db_url)))
     };
-    let d = header.infos().get("VRS_Allele_IDs").unwrap().description();
-    println!("{:?}", d);
 
     let file_vrs_versioning = get_vrs_version(&header)
         .map_err(|_| {
