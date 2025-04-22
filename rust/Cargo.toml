@@ -17,3 +17,4 @@ pyo3 = { version = "0.23.4", features = ["abi3-py310", "experimental-async"]}
 log = "0.4.22"
 tempfile = "3.14.0"
 itertools = "0.14.0"
+regex = "1.11.1"
