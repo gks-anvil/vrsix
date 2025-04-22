@@ -228,10 +228,10 @@
 ##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Net allele depths across all unfiltered datasets with called genotype">
 ##FORMAT=<ID=GT,Number=1,Type=String,Description="Consensus Genotype across all datasets with called genotype">
 ##FORMAT=<ID=PS,Number=1,Type=Integer,Description="Phase set in which this variant falls">
-##INFO=<ID=VRS_Allele_IDs,Number=R,Type=String,Description="The computed identifiers for the GA4GH VRS Alleles corresponding to the GT indexes of the REF and ALT alleles [VRS version=2.0.1;VRS-Python version=2.1.1]">
+##INFO=<ID=VRS_Allele_IDs,Number=R,Type=String,Description="The computed identifiers for the GA4GH VRS Alleles corresponding to the GT indexes of the REF and ALT alleles">
 ##INFO=<ID=VRS_Error,Number=.,Type=String,Description="If an error occurred computing a VRS Identifier, the error message">
-##INFO=<ID=VRS_Starts,Number=R,Type=Integer,Description="Interresidue coordinates used as the location starts for the GA4GH VRS Alleles corresponding to the GT indexes of the REF and ALT alleles">
-##INFO=<ID=VRS_Ends,Number=R,Type=Integer,Description="Interresidue coordinates used as the location ends for the GA4GH VRS Alleles corresponding to the GT indexes of the REF and ALT alleles">
+##INFO=<ID=VRS_Starts,Number=R,Type=String,Description="Interresidue coordinates used as the location starts for the GA4GH VRS Alleles corresponding to the GT indexes of the REF and ALT alleles">
+##INFO=<ID=VRS_Ends,Number=R,Type=String,Description="Interresidue coordinates used as the location ends for the GA4GH VRS Alleles corresponding to the GT indexes of the REF and ALT alleles">
 ##INFO=<ID=VRS_States,Number=R,Type=String,Description="The literal sequence states used for the GA4GH VRS Alleles corresponding to the GT indexes of the REF and ALT alleles">
 #CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	HG001
 chr1	783006	.	A	G	50	PASS	platforms=4;platformnames=PacBio,Illumina,10X,CG;datasets=4;datasetnames=CCS15kb_20kb,HiSeqPE300x,10XChromiumLR,CGnormal;callsets=6;callsetnames=CCS15kb_20kbDV,CCS15kb_20kbGATK4,HiSeqPE300xGATK,10XLRGATK,CGnormal,HiSeqPE300xfreebayes;datasetsmissingcall=IonExome,SolidSE75bp;callable=CS_CCS15kb_20kbDV_callable,CS_CCS15kb_20kbGATK4_callable;filt=CS_CGnormal_filt;difficultregion=HG001.hg38.300x.bam.bilkentuniv.010920.dups,hg38.segdups_sorted_merged,lowmappabilityall;VRS_Allele_IDs=ga4gh:VA.dwwiZdvVtfAmomu0OBsiHue1O-bw5SpG,ga4gh:VA.MiasxyXMXtOpsZgGelL3c4QgtflCNLHD;VRS_Starts=783005,783005;VRS_Ends=783006,783006;VRS_States=A,G	GT:PS:DP:ADALL:AD:GQ	1/1:.:652:16,234:0,82:312

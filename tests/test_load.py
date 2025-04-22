@@ -49,10 +49,16 @@ def test_load(fixture_dir: Path, temp_dir: Path, input_filename: str, expected_r
     results = conn.execute("SELECT * FROM vrs_locations").fetchall()
     assert len(results) == 10
     assert results == expected_results
+
+    results = conn.execute("SELECT * FROM file_uris").fetchall()
+    assert len(results) == 1
+    assert results == [(1, input_file.absolute().as_uri(), "2.0.1", "2.1.1")]
+
     conn.close()
 
 
 def test_load_specify_uri(fixture_dir: Path, temp_dir: Path, expected_results):
+    """Test support for passing custom URI parameter"""
     input_file = fixture_dir / "input.vcf"
     temp_db = temp_dir / "tmp.db"
     input_uri = "gs://my/input/file.vcf"
@@ -65,7 +71,59 @@ def test_load_specify_uri(fixture_dir: Path, temp_dir: Path, expected_results):
 
     results = conn.execute("SELECT * FROM file_uris").fetchall()
     assert len(results) == 1
-    assert results == [(1, input_uri, None, None)]
+    assert results == [(1, input_uri, "2.0.1", "2.1.1")]
+
+    conn.close()
+
+
+@pytest.mark.parametrize(
+    "input_filename", ["input_old_format.vcf", "input_old_format.vcf.gz"]
+)
+def test_load_old_vcf_annotation(
+    fixture_dir: Path, temp_dir: Path, input_filename: str
+):
+    """Around the VRS-Python 2.0 release, we made some changes to annotation schema/structure.
+
+    VRSIX should still be able to painlessly ingest those older formats, for now.
+    """
+    input_file = fixture_dir / input_filename
+    temp_db = temp_dir / "tmp.db"
+    load.load_vcf(input_file, temp_db)
+
+    conn = sqlite3.connect(temp_db)
+    results = conn.execute("SELECT * FROM vrs_locations").fetchall()
+    assert len(results) == 10
+    assert results == expected_results
+
+    results = conn.execute("SELECT * FROM file_uris").fetchall()
+    assert len(results) == 1
+    assert results == [(1, input_file.absolute().as_uri(), "2.0.1", "2.1.1")]
+
+    conn.close()
+
+
+@pytest.mark.parametrize(
+    "input_filename", ["input_old_format.vcf", "input_old_format.vcf.gz"]
+)
+def test_load_old_vcf_annotation(
+    fixture_dir: Path, temp_dir: Path, input_filename: str
+):
+    """Around the VRS-Python 2.0 release, we made some changes to annotation schema/structure.
+
+    VRSIX should still be able to painlessly ingest those older formats, for now.
+    """
+    input_file = fixture_dir / input_filename
+    temp_db = temp_dir / "tmp.db"
+    load.load_vcf(input_file, temp_db)
+
+    conn = sqlite3.connect(temp_db)
+    results = conn.execute("SELECT * FROM vrs_locations").fetchall()
+    assert len(results) == 10
+    assert results == expected_results
+
+    results = conn.execute("SELECT * FROM file_uris").fetchall()
+    assert len(results) == 1
+    assert results == [(1, input_file.absolute().as_uri(), None, None)]
 
     conn.close()
 
@@ -105,7 +163,7 @@ def test_non_block_gzip(fixture_dir: Path, temp_dir: Path):
 
 
 def test_load_redundant_rows(fixture_dir: Path, temp_dir: Path):
-    input_file = fixture_dir / "input.vcf"
+    input_file = fixture_dir / "input_old_format.vcf"
     temp_db = temp_dir / "tmp.db"
     load.load_vcf(input_file, temp_db)
     load.load_vcf(input_file, temp_db)
