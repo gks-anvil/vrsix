@@ -79,6 +79,10 @@ async fn get_reader(
     }
 }
 
+/// Populate the `file_uris` table with a row corresponding to the incoming file.
+///
+/// VRS/VRS Python version columns are nullable, so those options are just passed as
+/// null if they don't exist
 async fn load_file_uri(
     uri: &str,
     version_info: VcfVrsVersion,
@@ -97,6 +101,8 @@ async fn load_file_uri(
     if insert_result.rows_affected() > 0 {
         Ok(insert_result.last_insert_rowid())
     } else {
+        // if, for whatever reason, the file already existed, we go back and fetch the
+        // URI ID. We could also throw an error if we think that'd be better.
         let row_id: (i64,) = sqlx::query_as("SELECT id FROM file_uris WHERE uri = ?;")
             .bind(uri)
             .fetch_one(&mut *conn)
@@ -105,6 +111,7 @@ async fn load_file_uri(
     }
 }
 
+/// Output from schema lookup query
 #[derive(Debug)]
 struct SchemaResult {
     pub vrsix_schema_version: String,
@@ -137,11 +144,17 @@ async fn schema_matches_library(pool: &SqlitePool, file_uri: &str) -> Result<boo
     }
 }
 
+/// Description of VRS schema/library versioning taken from annotated VCF.
 struct VcfVrsVersion {
     vrs_version: Option<String>,
     vrs_python_version: Option<String>,
 }
 
+/// Extract VRS schema/library versioning from VCF.
+///
+/// If VCF doesn't have this info (i.e. it was made from an older VRS-Python release)
+/// then it'll return a struct with None values. Otherwise, it should just pull
+/// them out as they're given.
 fn get_vrs_version(header: &vcf::Header) -> Result<VcfVrsVersion, VcfError> {
     let description = header.infos().get("VRS_Allele_IDs").unwrap().description();
     let re = Regex::new(r"\[VRS version=(.*);VRS-Python version=(.*)\]").unwrap();
@@ -161,6 +174,17 @@ fn get_vrs_version(header: &vcf::Header) -> Result<VcfVrsVersion, VcfError> {
     }
 }
 
+/// Load a VRS-annotated VCF into the given VRSIX db.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::PathBuf;
+/// let vcf_path = PathBuf::from(r"path/to/my/vcf.vcf.gz");
+/// let db_url = String::from("file:///usr/local/share/index.db");
+/// let uri = db_url.to_string();
+/// let _ = load_vcf(vcf_path, &db_url, uri_value)).await?;
+/// ```
 pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<()> {
     let start = Instant::now();
 
