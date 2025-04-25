@@ -8,13 +8,25 @@ See the [vrsix Terra workflow](https://github.com/gks-anvil/vrsix-workflow) for 
 
 ## Usage
 
-From a VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. sufficient inputs for a tabix lookup), and store them in a sqlite database.
+To get started, you will need a fully VRS-annotated VCF. Confirm that your VCF contains the following info fields:
+- VRS_Allele_IDs
+- VRS_Starts
+- VRS_Stops
+- VRS_States
+
+For example, confirm that `chr1.vcf` has the required fields.
+
+```bash
+bcftools view -h chr1.vcf | grep '^##INFO='
+```
+
+From a VRSified VCF, ingest a VRS ID and the corresponding VCF-called location (i.e. sufficient inputs for a tabix lookup), and store them in a sqlite database.
 
 ```shell
 vrsix load chr1.vcf
 ```
 
-All instances of variations are stored with an associated file URI to support later retrieval. By default, this URI is simply the input VCF's location in the file system, but you may declare a custom URI instead as an optional argument:
+Each variation is stored with an associated file URI to support later retrieval. By default, this URI is simply the input VCF's location in the file system, but you may declare a custom URI instead as an optional argument:
 
 ```shell
 vrsix load chr1.vcf gs://my_stuff/chr1.vcf

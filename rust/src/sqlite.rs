@@ -31,6 +31,9 @@ pub async fn setup_db(db_url: &str) -> Result<(), Error> {
             vrs_id TEXT NOT NULL,
             chr TEXT NOT NULL,
             pos INTEGER NOT NULL,
+            vrs_start INTEGER NOT NULL,
+            vrs_end INTEGER NOT NULL,
+            vrs_state TEXT NOT NULL,
             uri_id INTEGER NOT NULL,
             FOREIGN KEY (uri_id) REFERENCES file_uris(id),
             UNIQUE(vrs_id, chr, pos, uri_id)
@@ -84,6 +87,9 @@ pub struct DbRow {
     pub vrs_id: String,
     pub chr: String,
     pub pos: i64,
+    pub vrs_start: i32,
+    pub vrs_end: i32,
+    pub vrs_state: String,
     pub uri_id: i64,
 }
 

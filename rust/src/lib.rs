@@ -1,5 +1,6 @@
 use pyo3::{create_exception, exceptions, prelude::*, Python};
 pub mod load;
+pub mod parse;
 pub mod sqlite;
 use std::path::PathBuf;
 use tokio::runtime::Runtime;

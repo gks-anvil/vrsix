@@ -1,13 +1,11 @@
+use crate::parse::{get_int_info_field, get_str_info_field, VrsVcfField};
 use crate::sqlite::{get_db_connection, setup_db, DbRow};
-use crate::{FiletypeError, SqliteFileError, VcfError, VrsixDbError};
+use crate::{FiletypeError, SqliteFileError, VrsixDbError};
 use futures::TryStreamExt;
+use itertools::izip;
 use log::{error, info};
 use noodles_bgzf::r#async::Reader as BgzfReader;
-use noodles_vcf::{
-    self as vcf,
-    r#async::io::Reader as VcfReader,
-    variant::record::info::{self, field::Value as InfoValue},
-};
+use noodles_vcf::r#async::io::Reader as VcfReader;
 use pyo3::{exceptions, prelude::*};
 use sqlx::{error::DatabaseError, sqlite::SqliteError, SqlitePool};
 use std::path::PathBuf;
@@ -20,10 +18,13 @@ use tokio::{
 async fn load_allele(db_row: DbRow, pool: &SqlitePool) -> Result<(), Box<dyn std::error::Error>> {
     let mut conn = pool.acquire().await?;
     let result =
-        sqlx::query("INSERT INTO vrs_locations (vrs_id, chr, pos, uri_id) VALUES (?, ?, ?, ?);")
+        sqlx::query("INSERT INTO vrs_locations (vrs_id, chr, pos, vrs_start, vrs_end, vrs_state, uri_id) VALUES (?, ?, ?, ?, ?, ?, ?);")
             .bind(db_row.vrs_id)
             .bind(db_row.chr)
             .bind(db_row.pos)
+            .bind(db_row.vrs_start)
+            .bind(db_row.vrs_end)
+            .bind(db_row.vrs_state)
             .bind(db_row.uri_id)
             .execute(&mut *conn)
             .await;
@@ -43,27 +44,6 @@ async fn load_allele(db_row: DbRow, pool: &SqlitePool) -> Result<(), Box<dyn std
         return Err(err.into());
     }
     Ok(())
-}
-
-fn get_vrs_ids(info: vcf::record::Info, header: &vcf::Header) -> Result<Vec<String>, PyErr> {
-    if let Some(Ok(Some(InfoValue::Array(array)))) = info.get(header, "VRS_Allele_IDs") {
-        if let info::field::value::Array::String(array_elements) = array {
-            let vec = array_elements
-                .iter()
-                .map(|cow_str| cow_str.unwrap().unwrap_or_default().to_string())
-                .collect();
-            return Ok(vec);
-        } else {
-            error!("Unable to unpack `{:?}` as an array of values", array);
-            Err(VcfError::new_err("expected string array variant"))
-        }
-    } else {
-        error!(
-            "Unable to unpack VRS_Allele_IDs from info fields: {:?}. Are annotations available?",
-            info
-        );
-        Err(VcfError::new_err("Expected Array variant"))
-    }
 }
 
 async fn get_reader(
@@ -143,11 +123,16 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<
         .map_err(|e| VrsixDbError::new_err(format!("Failed to insert file URI `{uri}`: {e}")))?;
 
     while let Some(record) = records.try_next().await? {
-        let vrs_ids = get_vrs_ids(record.info(), &header)?;
+        let vrs_ids = get_str_info_field(record.info(), &header, VrsVcfField::VrsAlleleIds)?;
+        let vrs_starts = get_int_info_field(record.info(), &header, VrsVcfField::VrsStarts)?;
+        let vrs_ends = get_int_info_field(record.info(), &header, VrsVcfField::VrsEnds)?;
+        let vrs_states = get_str_info_field(record.info(), &header, VrsVcfField::VrsStates)?;
         let chrom = record.reference_sequence_name();
         let pos = record.variant_start().unwrap()?.get();
 
-        for vrs_id in vrs_ids {
+        for (vrs_id, vrs_start, vrs_end, vrs_state) in
+            izip!(vrs_ids, vrs_starts, vrs_ends, vrs_states)
+        {
             let row = DbRow {
                 vrs_id: vrs_id
                     .strip_prefix("ga4gh:VA.")
@@ -155,6 +140,9 @@ pub async fn load_vcf(vcf_path: PathBuf, db_url: &str, uri: String) -> PyResult<
                     .to_string(),
                 chr: chrom.to_string(),
                 pos: pos.try_into().unwrap(),
+                vrs_start,
+                vrs_end,
+                vrs_state,
                 uri_id,
             };
             load_allele(row, &db_pool).await.map_err(|e| {
