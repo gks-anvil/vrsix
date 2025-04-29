@@ -5,6 +5,7 @@ use futures::TryStreamExt;
 use itertools::izip;
 use log::{error, info};
 use noodles_bgzf::r#async::Reader as BgzfReader;
+use noodles_vcf as vcf;
 use noodles_vcf::r#async::io::Reader as VcfReader;
 use pyo3::{exceptions, prelude::*};
 use regex::Regex;
