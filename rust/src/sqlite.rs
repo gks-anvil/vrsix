@@ -43,17 +43,18 @@ pub async fn setup_db(db_url: &str) -> Result<(), Error> {
         );
         CREATE TABLE IF NOT EXISTS vrsix_schema (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            vrsix_schema_version TEXT NOT NULL
+            vrsix_schema_version TEXT NOT NULL UNIQUE
         );
         ",
     )
     .execute(&db)
     .await?;
     info!("created table result: {:?}", result);
-    let schema_result = sqlx::query("INSERT INTO vrsix_schema (vrsix_schema_version) VALUES (?);")
-        .bind(VRSIX_SCHEMA_VERSION)
-        .execute(&db)
-        .await?;
+    let schema_result =
+        sqlx::query("INSERT OR IGNORE INTO vrsix_schema (vrsix_schema_version) VALUES (?);")
+            .bind(VRSIX_SCHEMA_VERSION)
+            .execute(&db)
+            .await?;
     info!("schema version insertion result: {:?}", schema_result);
     Ok(())
 }
