@@ -40,7 +40,12 @@ def expected_results() -> list[tuple[int, str, str, int, int, int, str, int]]:
 
 
 @pytest.mark.parametrize("input_filename", ["input.vcf", "input.vcf.gz"])
-def test_load(fixture_dir: Path, temp_dir: Path, input_filename: str, expected_results):
+def test_load(
+    fixture_dir: Path,
+    temp_dir: Path,
+    input_filename: str,
+    expected_results: list[tuple[int, str, str, int, int, int, str, int]],
+):
     input_file = fixture_dir / input_filename
     temp_db = temp_dir / "tmp.db"
     load.load_vcf(input_file, temp_db)
@@ -57,7 +62,11 @@ def test_load(fixture_dir: Path, temp_dir: Path, input_filename: str, expected_r
     conn.close()
 
 
-def test_load_specify_uri(fixture_dir: Path, temp_dir: Path, expected_results):
+def test_load_specify_uri(
+    fixture_dir: Path,
+    temp_dir: Path,
+    expected_results: list[tuple[int, str, str, int, int, int, str, int]],
+):
     """Test support for passing custom URI parameter"""
     input_file = fixture_dir / "input.vcf"
     temp_db = temp_dir / "tmp.db"
@@ -80,7 +89,10 @@ def test_load_specify_uri(fixture_dir: Path, temp_dir: Path, expected_results):
     "input_filename", ["input_old_format.vcf", "input_old_format.vcf.gz"]
 )
 def test_load_old_vcf_annotation(
-    fixture_dir: Path, temp_dir: Path, input_filename: str, expected_results
+    fixture_dir: Path,
+    temp_dir: Path,
+    input_filename: str,
+    expected_results: list[tuple[int, str, str, int, int, int, str, int]],
 ):
     """Around the VRS-Python 2.0 release, we made some changes to annotation schema/structure.
 
