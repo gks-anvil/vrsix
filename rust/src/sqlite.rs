@@ -22,10 +22,11 @@ pub async fn setup_db(db_url: &str) -> Result<(), Error> {
 
     let db = get_db_connection(db_url).await?;
     let result = sqlx::query(
+        // see #43 for why only uri is UNIQUE in file_uris
         "
         CREATE TABLE IF NOT EXISTS file_uris (
             id INTEGER PRIMARY KEY,
-            uri TEXT UNIQUE,
+            uri TEXT UNIQUE NOT NULL,
             vrs_version TEXT,
             vrs_python_version TEXT
         );
