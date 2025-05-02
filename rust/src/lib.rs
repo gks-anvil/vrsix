@@ -16,6 +16,12 @@ pub fn vcf_to_sqlite(vcf_path: PathBuf, db_url: String, vcf_uri: Option<String>)
     Ok(())
 }
 
+// hard-coded VRSIX schema value.
+// At some point, we could provide some kind of migration support if we ever need to
+// change things, but in the meantime this provides some basic confirmation that the
+// target index file should probably have a familiar schema.
+const VRSIX_SCHEMA_VERSION: &str = "1";
+
 create_exception!(loading_module, VrsixError, exceptions::PyException);
 create_exception!(loading_module, SqliteFileError, VrsixError);
 create_exception!(loading_module, VcfError, VrsixError);

@@ -1,3 +1,4 @@
+use crate::VRSIX_SCHEMA_VERSION;
 use log::info;
 use sqlx::{migrate::MigrateDatabase, Error, Sqlite, SqlitePool};
 use std::fs;
@@ -21,10 +22,13 @@ pub async fn setup_db(db_url: &str) -> Result<(), Error> {
 
     let db = get_db_connection(db_url).await?;
     let result = sqlx::query(
+        // see #43 for why only uri is UNIQUE in file_uris
         "
         CREATE TABLE IF NOT EXISTS file_uris (
             id INTEGER PRIMARY KEY,
-            uri TEXT UNIQUE
+            uri TEXT UNIQUE NOT NULL,
+            vrs_version TEXT,
+            vrs_python_version TEXT
         );
         CREATE TABLE IF NOT EXISTS vrs_locations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,11 +42,21 @@ pub async fn setup_db(db_url: &str) -> Result<(), Error> {
             FOREIGN KEY (uri_id) REFERENCES file_uris(id),
             UNIQUE(vrs_id, chr, pos, uri_id)
         );
+        CREATE TABLE IF NOT EXISTS vrsix_schema (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            vrsix_schema_version TEXT NOT NULL UNIQUE
+        );
         ",
     )
     .execute(&db)
     .await?;
     info!("created table result: {:?}", result);
+    let schema_result =
+        sqlx::query("INSERT OR IGNORE INTO vrsix_schema (vrsix_schema_version) VALUES (?);")
+            .bind(VRSIX_SCHEMA_VERSION)
+            .execute(&db)
+            .await?;
+    info!("schema version insertion result: {:?}", schema_result);
     Ok(())
 }
 
