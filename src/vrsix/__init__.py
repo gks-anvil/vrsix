@@ -3,7 +3,7 @@
 from importlib.metadata import PackageNotFoundError, version
 
 try:
-    __version__ = version("thera-py")
+    __version__ = version("vrsix")
 except PackageNotFoundError:
     __version__ = "unknown"
 finally:
