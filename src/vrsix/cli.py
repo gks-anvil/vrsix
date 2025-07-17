@@ -6,6 +6,7 @@ from timeit import default_timer as timer
 
 import click
 
+from vrsix import __version__
 from vrsix import load as load_vcf
 
 _logger = logging.getLogger(__name__)
@@ -21,6 +22,7 @@ def _configure_logging() -> None:
 
 
 @click.group()
+@click.version_option(__version__)
 def cli() -> None:
     """Index VRS-annotated VCFs"""
     _configure_logging()
